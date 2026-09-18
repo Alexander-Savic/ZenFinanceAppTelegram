@@ -44,7 +44,6 @@ export default function HomePage() {
     setAccounts((prev) => prev.filter((acc) => acc.id !== id));
   };
 
-  // Состояние Категорий
   const [categories, setCategories] = useState<Category[]>([
     { id: 'cat-1', name: 'Еда и Кофейни', icon: '☕', color: '#10B981', type: 'expense', budgetLimit: 150 },
     { id: 'cat-2', name: 'Продукты', icon: '🛒', color: '#3B82F6', type: 'expense', budgetLimit: 400 },
@@ -75,7 +74,6 @@ export default function HomePage() {
     setCategories((prev) => prev.filter((c) => c.id !== id));
   };
 
-  // Состояние Транзакций
   const [transactions, setTransactions] = useState<Transaction[]>([
     { 
       id: 'tx-1', 
@@ -110,7 +108,6 @@ export default function HomePage() {
     totalSaved: 340,
   });
 
-  // Преобразование массива категорий в Record<string, Category> специально для BudgetOverview
   const categoriesMap = useMemo(() => {
     return categories.reduce<Record<string, Category>>((acc, cat) => {
       acc[cat.id] = cat;
@@ -118,7 +115,6 @@ export default function HomePage() {
     }, {});
   }, [categories]);
 
-  // Расчет общего баланса по USD счетам
   const totalBalance = useMemo(() => {
     return accounts
       .filter((acc) => acc.currency === 'USD')
@@ -129,7 +125,6 @@ export default function HomePage() {
     <div className="min-h-screen bg-[#F8FAFC] pb-24 text-slate-800">
       <div className="mx-auto max-w-md px-4 pt-4">
 
-        {/* ----------------- ВКЛАДКА: ОБЗОР (HOME) ----------------- */}
         {activeTab === 'home' && (
           <div className="flex flex-col gap-5">
             {/* Баланс и быстрые действия */}
@@ -149,7 +144,6 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* Карточки счетов */}
             <div className="flex flex-col gap-2">
               <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Счета</p>
               <div className="flex gap-3 overflow-x-auto pb-2 [scrollbar-width:none]">
@@ -162,10 +156,8 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* BudgetOverview ждет Category[] */}
             <BudgetOverview categories={categories} transactions={transactions} />
 
-            {/* TransactionHistory ждет массивы Category[] и Account[] */}
             <div className="flex flex-col gap-2">
               <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">История операций</p>
               <TransactionHistory
@@ -177,7 +169,6 @@ export default function HomePage() {
           </div>
         )}
 
-        {/* ----------------- ВКЛАДКА: СЧЕТА (ACCOUNTS) ----------------- */}
         {activeTab === 'accounts' && (
           <div className="flex flex-col gap-5">
             <h2 className="text-xl font-bold text-slate-800">Мои Счета и Кошельки</h2>
@@ -189,7 +180,6 @@ export default function HomePage() {
           </div>
         )}
 
-        {/* ----------------- ВКЛАДКА: АНАЛИТИКА (ANALYTICS) ----------------- */}
         {activeTab === 'analytics' && (
           <div className="flex flex-col gap-5">
             <h2 className="text-xl font-bold text-slate-800">Аналитика и Графики</h2>
@@ -199,7 +189,6 @@ export default function HomePage() {
           </div>
         )}
 
-        {/* ----------------- ВКЛАДКА: ЦЕЛИ И КОПИЛКА (GOALS) ----------------- */}
         {activeTab === 'goals' && (
           <div className="flex flex-col gap-5">
             <h2 className="text-xl font-bold text-slate-800">Цели и Копилка</h2>
@@ -213,7 +202,6 @@ export default function HomePage() {
           </div>
         )}
 
-        {/* ----------------- ВКЛАДКА: ЕЩЁ / НАСТРОЙКИ (SETTINGS) ----------------- */}
         {activeTab === 'settings' && (
           <div className="flex flex-col gap-5">
             <RecurringTransactions categories={categories} accounts={accounts} />

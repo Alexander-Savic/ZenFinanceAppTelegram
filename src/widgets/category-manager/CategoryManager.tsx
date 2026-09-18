@@ -14,11 +14,9 @@ interface CategoryManagerProps {
 }
 
 export function CategoryManager({ categories, onAddCategory, onDeleteCategory }: CategoryManagerProps) {
-  // Ограничиваем типы согласно TransactionType
   const [activeTab, setActiveTab] = useState<Extract<TransactionType, 'expense' | 'income'>>('expense');
   const [isAdding, setIsAdding] = useState(false);
 
-  // Форма добавления
   const [name, setName] = useState('');
   const [icon, setIcon] = useState('🛒');
   const [color, setColor] = useState('#3B82F6');
@@ -40,7 +38,6 @@ export function CategoryManager({ categories, onAddCategory, onDeleteCategory }:
       });
     }
 
-    // Сброс формы
     setName('');
     setBudgetLimit('');
     setIsAdding(false);
@@ -48,7 +45,6 @@ export function CategoryManager({ categories, onAddCategory, onDeleteCategory }:
 
   return (
     <div className="flex flex-col gap-4">
-      {/* Переключатель: Расходы / Доходы */}
       <div className="flex rounded-2xl bg-slate-200/60 p-1">
         <button
           type="button"
@@ -74,7 +70,6 @@ export function CategoryManager({ categories, onAddCategory, onDeleteCategory }:
         </button>
       </div>
 
-      {/* Список существующих категорий */}
       <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
         {filteredCategories.map((cat) => (
           <div
@@ -110,7 +105,6 @@ export function CategoryManager({ categories, onAddCategory, onDeleteCategory }:
         ))}
       </div>
 
-      {/* Кнопка или форма добавления новой категории */}
       {!isAdding ? (
         <button
           type="button"
@@ -134,7 +128,6 @@ export function CategoryManager({ categories, onAddCategory, onDeleteCategory }:
             </button>
           </div>
 
-          {/* Название */}
           <div>
             <label className="text-xs font-medium text-slate-400">Название</label>
             <input
@@ -147,7 +140,6 @@ export function CategoryManager({ categories, onAddCategory, onDeleteCategory }:
             />
           </div>
 
-          {/* Выбор иконки */}
           <div>
             <label className="text-xs font-medium text-slate-400">Иконка</label>
             <div className="mt-1 flex flex-wrap gap-2">
@@ -166,7 +158,6 @@ export function CategoryManager({ categories, onAddCategory, onDeleteCategory }:
             </div>
           </div>
 
-          {/* Выбор цвета */}
           <div>
             <label className="text-xs font-medium text-slate-400">Цвет</label>
             <div className="mt-1 flex flex-wrap gap-2">
@@ -183,8 +174,7 @@ export function CategoryManager({ categories, onAddCategory, onDeleteCategory }:
               ))}
             </div>
           </div>
-
-          {/* Опциональный лимит для расходов */}
+          
           {activeTab === 'expense' && (
             <div>
               <label className="text-xs font-medium text-slate-400">Лимит бюджета в месяц (опционально)</label>

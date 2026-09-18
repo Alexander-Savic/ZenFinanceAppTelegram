@@ -1,21 +1,10 @@
 import type { Goal, PiggybankSettings } from '@/shared/types/finance';
 
-// ============================================================================
-// Логика "Копилки": авто-округление расходов в пользу выбранной цели
-// ============================================================================
-
 export interface RoundUpResult {
-  /** Сумма, до которой округлён расход (спишется со счёта) */
   roundedAmount: number;
-  /** Разница, которая уходит в копилку */
   savedAmount: number;
 }
 
-/**
- * Округляет сумму расхода вверх до ближайшего кратного roundTo.
- * Пример: amount=180, roundTo=200 → { roundedAmount: 200, savedAmount: 20 }.
- * Если сумма уже кратна roundTo — округление не требуется (savedAmount: 0).
- */
 export function calculateRoundUp(amount: number, roundTo: number): RoundUpResult {
   if (roundTo <= 0 || amount <= 0) return { roundedAmount: amount, savedAmount: 0 };
 
@@ -31,10 +20,6 @@ export interface ApplyPiggybankResult {
   nextGoal: Goal | undefined;
 }
 
-/**
- * Применяет настройки копилки к конкретной расходной операции.
- * Ничего не мутирует — возвращает обновлённые totalSaved и currentAmount цели.
- */
 export function applyPiggybankToExpense(
   expenseAmount: number,
   settings: PiggybankSettings,

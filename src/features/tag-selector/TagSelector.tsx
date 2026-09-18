@@ -19,7 +19,6 @@ export function TagSelector({
   const [newTagInput, setNewTagInput] = useState('');
   const [isAdding, setIsAdding] = useState(false);
 
-  // Добавление выбранного тега
   const handleToggleTag = (tag: string) => {
     if (selectedTags.includes(tag)) {
       onChangeTags(selectedTags.filter((t) => t !== tag));
@@ -28,7 +27,6 @@ export function TagSelector({
     }
   };
 
-  // Создание нового кастомного тега
   const handleAddNewTag = (e: React.FormEvent) => {
     e.preventDefault();
     const trimmed = newTagInput.trim().replace(/^#/, ''); // удаляем решетку, если пользователь ввел ее
@@ -56,7 +54,6 @@ export function TagSelector({
         )}
       </div>
 
-      {/* Выбранные теги */}
       {selectedTags.length > 0 && (
         <div className="flex flex-wrap gap-1.5">
           {selectedTags.map((tag) => (
@@ -77,7 +74,6 @@ export function TagSelector({
         </div>
       )}
 
-      {/* Поле ввода для нового тега */}
       {isAdding && (
         <form onSubmit={handleAddNewTag} className="flex gap-2">
           <input
@@ -104,7 +100,6 @@ export function TagSelector({
         </form>
       )}
 
-      {/* Быстрые подсказки предложенных тегов */}
       <div className="flex flex-wrap gap-1.5 pt-1">
         {availableTags.map((tag) => {
           const isSelected = selectedTags.includes(tag);

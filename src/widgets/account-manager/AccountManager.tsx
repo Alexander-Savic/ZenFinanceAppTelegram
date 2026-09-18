@@ -10,7 +10,6 @@ interface AccountManagerProps {
   onDeleteAccount: (id: string) => void;
 }
 
-// Доступные стили карточек (градиенты и цвета)
 const CARD_GRADIENTS = [
   { name: 'Emerald', bg: 'bg-gradient-to-br from-emerald-600 to-teal-800', color: '#10B981' },
   { name: 'Midnight', bg: 'bg-gradient-to-br from-slate-900 to-slate-800', color: '#0F172A' },
@@ -25,7 +24,6 @@ export function AccountManager({ accounts, onAddAccount, onDeleteAccount }: Acco
   const [isAdding, setIsAdding] = useState(false);
   const [selectedType, setSelectedType] = useState<AccountType>('card');
 
-  // Поля формы
   const [name, setName] = useState('');
   const [balance, setBalance] = useState('');
   const [currency, setCurrency] = useState('USD');
@@ -49,7 +47,6 @@ export function AccountManager({ accounts, onAddAccount, onDeleteAccount }: Acco
       icon,
     });
 
-    // Сброс
     setName('');
     setBalance('');
     setIsAdding(false);
@@ -73,7 +70,6 @@ export function AccountManager({ accounts, onAddAccount, onDeleteAccount }: Acco
 
   return (
     <div className="flex flex-col gap-5">
-      {/* Карусель визуальных карточек счетов */}
       <div className="flex gap-3 overflow-x-auto pb-2 pt-1 [scrollbar-width:none]">
         {accounts.map((acc) => {
           const matchedGrad = CARD_GRADIENTS.find((g) => g.color === acc.color) || CARD_GRADIENTS[0];
@@ -98,7 +94,6 @@ export function AccountManager({ accounts, onAddAccount, onDeleteAccount }: Acco
                 </h3>
               </div>
 
-              {/* Удаление счета */}
               <button
                 type="button"
                 onClick={() => onDeleteAccount(acc.id)}
@@ -112,7 +107,6 @@ export function AccountManager({ accounts, onAddAccount, onDeleteAccount }: Acco
         })}
       </div>
 
-      {/* Кнопка или Форма добавления нового счета */}
       {!isAdding ? (
         <button
           type="button"
@@ -134,7 +128,6 @@ export function AccountManager({ accounts, onAddAccount, onDeleteAccount }: Acco
             </button>
           </div>
 
-          {/* Выбор типа счета */}
           <div>
             <label className="text-xs font-medium text-slate-400">Тип счета</label>
             <div className="mt-1.5 grid grid-cols-4 gap-2">
@@ -165,7 +158,6 @@ export function AccountManager({ accounts, onAddAccount, onDeleteAccount }: Acco
             </div>
           </div>
 
-          {/* Название и Валюта */}
           <div className="grid grid-cols-3 gap-3">
             <div className="col-span-2">
               <label className="text-xs font-medium text-slate-400">Название счета</label>
@@ -194,7 +186,6 @@ export function AccountManager({ accounts, onAddAccount, onDeleteAccount }: Acco
             </div>
           </div>
 
-          {/* Начальный баланс */}
           <div>
             <label className="text-xs font-medium text-slate-400">Начальный баланс</label>
             <input
@@ -207,7 +198,6 @@ export function AccountManager({ accounts, onAddAccount, onDeleteAccount }: Acco
             />
           </div>
 
-          {/* Выбор визуального оформления (Градиента) */}
           <div>
             <label className="text-xs font-medium text-slate-400">Дизайн карты</label>
             <div className="mt-1.5 flex gap-2.5">

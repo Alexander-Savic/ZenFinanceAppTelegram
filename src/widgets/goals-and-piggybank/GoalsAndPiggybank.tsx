@@ -18,8 +18,6 @@ function formatDeadline(deadline?: string | null): string | null {
   return `Осталось ${days} дн.`;
 }
 
-// ---- Прогресс одной цели ---------------------------------------------------
-
 const GoalRow: FC<{ goal: Goal; onSelect?: (goal: Goal) => void }> = ({ goal, onSelect }) => {
   const percent = goal.targetAmount > 0 ? Math.min(100, (goal.currentAmount / goal.targetAmount) * 100) : 0;
   const deadlineLabel = formatDeadline(goal.deadline);
@@ -56,8 +54,6 @@ const GoalRow: FC<{ goal: Goal; onSelect?: (goal: Goal) => void }> = ({ goal, on
     </button>
   );
 };
-
-// ---- Карточка копилки -------------------------------------------------------
 
 interface PiggybankCardProps {
   settings: PiggybankSettings;
@@ -145,8 +141,6 @@ const PiggybankCard: FC<PiggybankCardProps> = ({ settings, goals, onToggle, onCh
     </div>
   );
 };
-
-// ---- GoalsAndPiggybank -------------------------------------------------------
 
 export interface GoalsAndPiggybankProps {
   goals: Goal[];

@@ -61,7 +61,6 @@ export const CurrencyConverter: FC = () => {
         ))}
       </div>
 
-      {/* Поле "отдаёте" */}
       <div className="rounded-xl bg-black/[0.04] p-3">
         <p className="text-xs text-black/40">Отдаёте</p>
         <div className="mt-1 flex items-center justify-between gap-2">
@@ -76,7 +75,6 @@ export const CurrencyConverter: FC = () => {
         </div>
       </div>
 
-      {/* Поменять валюты местами */}
       <button
         onClick={swap}
         aria-label="Поменять валюты местами"
@@ -85,7 +83,6 @@ export const CurrencyConverter: FC = () => {
         <ArrowUpDown className="h-4 w-4" />
       </button>
 
-      {/* Поле "получаете" */}
       <div className="rounded-xl bg-black/[0.04] p-3">
         <p className="text-xs text-black/40">Получаете</p>
         <div className="mt-1 flex items-center justify-between gap-2">

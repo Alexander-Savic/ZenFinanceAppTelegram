@@ -2,10 +2,6 @@ import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import type { Account, Category, Transaction } from '@/shared/types/finance';
 
-// ============================================================================
-// Публичный API
-// ============================================================================
-
 export interface ExportPdfOptions {
   title?: string;
   periodLabel?: string;
@@ -18,12 +14,6 @@ const TYPE_LABEL: Record<Transaction['type'], string> = {
   transfer: 'Перевод',
 };
 
-/**
- * Отчёт рендерится в offscreen HTML-контейнере и растеризуется через html2canvas.
- * Это осознанный выбор вместо текстового API jsPDF: встроенные шрифты jsPDF
- * не поддерживают кириллицу без ручной загрузки TTF, а рендер через DOM
- * решает это без дополнительных файлов шрифтов и даёт полный контроль вёрстки.
- */
 export async function exportTransactionsToPdf(
   transactions: Transaction[],
   categories: Record<string, Category>,
@@ -73,10 +63,6 @@ export async function exportTransactionsToPdf(
     container.remove();
   }
 }
-
-// ============================================================================
-// Вёрстка отчёта
-// ============================================================================
 
 function escapeHtml(value: string): string {
   return value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');

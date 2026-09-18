@@ -1,10 +1,6 @@
 import ExcelJS from 'exceljs';
 import type { Account, Category, Transaction } from '@/shared/types/finance';
 
-// ============================================================================
-// Экспорт транзакций в XLSX
-// ============================================================================
-
 const TYPE_LABEL: Record<Transaction['type'], string> = {
   income: 'Доход',
   expense: 'Расход',

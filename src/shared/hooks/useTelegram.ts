@@ -2,10 +2,6 @@
 
 import { useCallback, useEffect, useState } from 'react';
 
-// ============================================================================
-// Минимальные типы Telegram WebApp SDK (актуальны для Bot API 7.x+)
-// ============================================================================
-
 interface TelegramThemeParams {
   bg_color?: string;
   text_color?: string;
@@ -103,10 +99,6 @@ declare global {
   }
 }
 
-// ============================================================================
-// useTelegram — безопасная (SSR-safe) интеграция с Telegram WebApp SDK
-// ============================================================================
-
 interface UseTelegramReturn {
   webApp: TelegramWebApp | null;
   user: TelegramUser | null;
@@ -131,12 +123,10 @@ export function useTelegram(): UseTelegramReturn {
   const [themeParams, setThemeParams] = useState<TelegramThemeParams>({});
 
   useEffect(() => {
-    // Защита от SSR: Next.js App Router выполняет этот код и на сервере
     if (typeof window === 'undefined') return;
 
     const tg = window.Telegram?.WebApp;
     if (!tg) {
-      // Приложение открыто вне Telegram (например, в браузере при разработке)
       setIsReady(true);
       return;
     }
@@ -149,7 +139,6 @@ export function useTelegram(): UseTelegramReturn {
     setThemeParams(tg.themeParams);
     setIsReady(true);
 
-    // Пробрасываем цвета темы Telegram в CSS-переменные приложения
     const applyTheme = () => {
       const root = document.documentElement;
       const params = tg.themeParams;

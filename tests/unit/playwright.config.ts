@@ -1,13 +1,10 @@
 import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
-  // Задаем корневую директорию для e2e тестов
   testDir: './e2e',
   
-  // Ищем только файлы .spec.ts строго внутри папки e2e
   testMatch: /.*\.spec\.ts/,
   
-  // Исключаем любые юнит-тесты из поиска
   testIgnore: [
     '**/tests/**',
     '**/*.test.tsx',

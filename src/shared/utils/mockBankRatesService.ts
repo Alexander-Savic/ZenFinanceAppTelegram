@@ -1,11 +1,5 @@
 import type { CurrencyCode } from '@/shared/types/finance';
 
-// ============================================================================
-// Mock-сервис банковских курсов.
-// Структура спроектирована так, чтобы реальный запрос к API банка подменил
-// только тело fetchBankRates — сигнатура и форма ответа не меняются.
-// ============================================================================
-
 export interface Bank {
   id: string;
   name: string;
@@ -13,9 +7,7 @@ export interface Bank {
 
 export interface BankRate {
   currency: CurrencyCode;
-  /** По какому курсу банк покупает валюту у клиента (даёт ₽) */
   buy: number;
-  /** По какому курсу банк продаёт валюту клиенту (клиент отдаёт ₽) */
   sell: number;
 }
 
@@ -33,7 +25,6 @@ export const BANKS: Bank[] = [
   { id: 'alfa', name: 'Альфа-Банк' },
 ];
 
-// Базовые курсы (условные, для демонстрации) — от них считается спред каждого банка
 const BASE_RATES: Record<string, number> = {
   USD: 97.2,
   EUR: 104.8,
@@ -42,7 +33,6 @@ const BASE_RATES: Record<string, number> = {
   UAH: 2.35,
 };
 
-// Спред банка относительно базового курса (buy ниже базы, sell — выше)
 const BANK_SPREAD: Record<string, number> = {
   cbrf: 0,
   tbank: 0.012,
@@ -51,20 +41,14 @@ const BANK_SPREAD: Record<string, number> = {
 };
 
 function seededJitter(seed: string): number {
-  // Небольшое псевдослучайное отклонение, стабильное для (банк, валюта, минута) —
-  // курс "меняется" между обновлениями, но не скачет на каждый рендер
   const bucket = Math.floor(Date.now() / 60_000);
   let hash = 0;
   for (const char of `${seed}-${bucket}`) hash = (hash * 31 + char.charCodeAt(0)) % 1000;
   return (hash / 1000 - 0.5) * 0.006; // ±0.3%
 }
 
-/**
- * Имитация запроса к API конкретного банка. В продакшене здесь будет
- * fetch(`https://api.<bank>.ru/exchange-rates`, { headers: { Authorization: ... } }).
- */
 export async function fetchBankRates(bankId: string): Promise<BankRatesResponse> {
-  await new Promise((resolve) => setTimeout(resolve, 350 + Math.random() * 250)); // имитация сетевой задержки
+  await new Promise((resolve) => setTimeout(resolve, 350 + Math.random() * 250)); 
 
   const spread = BANK_SPREAD[bankId] ?? 0.015;
 
@@ -81,10 +65,6 @@ export async function fetchBankRates(bankId: string): Promise<BankRatesResponse>
 
   return { bankId, base: 'RUB', rates, updatedAt: new Date().toISOString() };
 }
-
-// ============================================================================
-// Конвертация с использованием курсов банка (кросс-курс через ₽)
-// ============================================================================
 
 export function convertAmount(amount: number, from: CurrencyCode, to: CurrencyCode, rates: BankRate[]): number | null {
   if (from === to) return amount;

@@ -9,7 +9,6 @@ interface BudgetOverviewProps {
 }
 
 export function BudgetOverview({ categories, transactions }: BudgetOverviewProps) {
-  // Фильтруем категории расходов, у которых задан бюджетный лимит
   const budgetedCategories = categories.filter((c) => c.type === 'expense' && c.budgetLimit && c.budgetLimit > 0);
 
   if (budgetedCategories.length === 0) {
@@ -33,7 +32,6 @@ export function BudgetOverview({ categories, transactions }: BudgetOverviewProps
 
       <div className="flex flex-col gap-3.5 mt-1">
         {budgetedCategories.map((cat) => {
-          // Считаем сумму трат по данной категории
           const spent = transactions
             .filter((t) => t.categoryId === cat.id && t.type === 'expense')
             .reduce((sum, t) => sum + t.amount, 0);
@@ -64,7 +62,6 @@ export function BudgetOverview({ categories, transactions }: BudgetOverviewProps
                 </div>
               </div>
 
-              {/* Прогресс-бар с меняющимся цветом при превышении */}
               <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
                 <div
                   className={`h-full rounded-full transition-all duration-500 ${

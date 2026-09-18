@@ -92,7 +92,6 @@ export function RecurringTransactions({ categories, accounts }: RecurringTransac
         )}
       </div>
 
-      {/* Список регулярных подписок / платежей */}
       <div className="flex flex-col gap-2.5">
         {payments.map((p) => (
           <div
@@ -131,7 +130,6 @@ export function RecurringTransactions({ categories, accounts }: RecurringTransac
         ))}
       </div>
 
-      {/* Форма добавления */}
       {isAdding && (
         <form onSubmit={handleAdd} className="flex flex-col gap-3 rounded-2xl bg-white p-4 border border-slate-100 shadow-md">
           <div className="flex justify-between items-center">

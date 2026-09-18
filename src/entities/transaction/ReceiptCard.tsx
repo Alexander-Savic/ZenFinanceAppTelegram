@@ -12,7 +12,6 @@ export interface ReceiptCardProps {
   payload: SharePayload;
 }
 
-/** Презентационная карточка "чека" — используется и в превью шеринга, и на публичной странице */
 export const ReceiptCard: FC<ReceiptCardProps> = ({ payload }) => {
   const date = new Date(payload.date);
   const amountColor = payload.type === 'income' ? '#059669' : '#12131A';
@@ -47,7 +46,6 @@ export const ReceiptCard: FC<ReceiptCardProps> = ({ payload }) => {
         {payload.tags.length > 0 && <Row label="Теги" value={payload.tags.join(', ')} />}
       </div>
 
-      {/* перфорация — имитация края бумажного чека */}
       <div
         className="absolute bottom-0 left-0 right-0 h-4"
         style={{

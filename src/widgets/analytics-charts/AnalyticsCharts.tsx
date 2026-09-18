@@ -32,13 +32,9 @@ interface CategorySlice {
 }
 
 const PERIOD_LABEL: Record<Period, string> = { week: 'Неделя', month: 'Месяц', year: 'Год' };
-// Совпадает с цветовой логикой TransactionHistory: доход — emerald, расход — тёмный "ink"
 const INCOME_COLOR = '#059669';
 const EXPENSE_COLOR = '#27272A';
 
-// ============================================================================
-// Агрегация транзакций во временной ряд
-// ============================================================================
 
 function startOfDay(date: Date): Date {
   const d = new Date(date);
@@ -88,7 +84,6 @@ function buildTrend(transactions: Transaction[], period: Period): TrendPoint[] {
     return points.map(({ label, income, expense }) => ({ label, income, expense }));
   }
 
-  // year — 12 месяцев
   const points: Array<TrendPoint & { month: number; year: number }> = Array.from({ length: 12 }, (_, i) => {
     const date = new Date(now.getFullYear(), now.getMonth() - (11 - i), 1);
     return {
@@ -130,10 +125,6 @@ function buildCategorySlices(transactions: Transaction[], categories: Record<str
     .sort((a, b) => b.value - a.value);
 }
 
-// ============================================================================
-// Кастомный тултип (вместо генеричного из recharts)
-// ============================================================================
-
 interface ChartTooltipProps {
   active?: boolean;
   label?: string;
@@ -155,10 +146,6 @@ const ChartTooltip: FC<ChartTooltipProps> = ({ active, payload, label }) => {
   );
 };
 
-// ============================================================================
-// AnalyticsCharts
-// ============================================================================
-
 export interface AnalyticsChartsProps {
   transactions: Transaction[];
   categories: Record<string, Category>;
@@ -173,7 +160,6 @@ export const AnalyticsCharts: FC<AnalyticsChartsProps> = ({ transactions, catego
 
   return (
     <div className="flex flex-col gap-6">
-      {/* Переключатель периода */}
       <div className="flex gap-1 self-start rounded-full bg-black/[0.05] p-1">
         {(Object.keys(PERIOD_LABEL) as Period[]).map((p) => (
           <button
@@ -187,7 +173,6 @@ export const AnalyticsCharts: FC<AnalyticsChartsProps> = ({ transactions, catego
         ))}
       </div>
 
-      {/* Доходы vs Расходы */}
       <div className="rounded-2xl bg-white p-4">
         <div className="mb-3 flex items-center gap-4 text-xs font-medium text-black/50">
           <span className="flex items-center gap-1.5">
@@ -211,7 +196,6 @@ export const AnalyticsCharts: FC<AnalyticsChartsProps> = ({ transactions, catego
         </ResponsiveContainer>
       </div>
 
-      {/* Распределение расходов по категориям */}
       <div className="rounded-2xl bg-white p-4">
         <p className="mb-3 text-xs font-medium text-black/50">Расходы по категориям</p>
         {slices.length === 0 ? (

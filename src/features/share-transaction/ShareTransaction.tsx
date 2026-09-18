@@ -31,7 +31,6 @@ export const ShareTransaction: FC<ShareTransactionProps> = ({ transaction, categ
     const text = `${category?.name ?? 'Операция'} — чек из Finance Tracker`;
     const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`;
 
-    // Безопасно приводим webApp к расширенному типу Telegram SDK
     const tg = webApp as (typeof webApp & { openTelegramLink?: (url: string) => void; openLink?: (url: string) => void }) | null;
 
     if (tg?.openTelegramLink) {

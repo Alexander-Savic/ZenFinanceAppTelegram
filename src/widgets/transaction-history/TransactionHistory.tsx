@@ -16,16 +16,12 @@ export function TransactionHistory({ transactions, categories, accounts }: Trans
   const [selectedType, setSelectedType] = useState<'all' | 'expense' | 'income'>('all');
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>('all');
 
-  // Фильтрация
   const filteredTransactions = transactions.filter((tx) => {
-    // Поиск по описанию/комментарию
     const matchesSearch = tx.comment?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       tx.tags?.some((tag) => tag.toLowerCase().includes(searchQuery.toLowerCase()));
 
-    // Фильтр по типу
     const matchesType = selectedType === 'all' || tx.type === selectedType;
 
-    // Фильтр по категории
     const matchesCategory = selectedCategoryId === 'all' || tx.categoryId === selectedCategoryId;
 
     return matchesSearch && matchesType && matchesCategory;
@@ -33,7 +29,6 @@ export function TransactionHistory({ transactions, categories, accounts }: Trans
 
   return (
     <div className="flex flex-col gap-4">
-      {/* Строка поиска */}
       <div className="flex items-center gap-2">
         <div className="flex flex-1 items-center gap-2 rounded-2xl bg-white px-4 py-3 border border-slate-100 shadow-sm">
           <Search className="h-4 w-4 text-slate-400" />
@@ -47,7 +42,6 @@ export function TransactionHistory({ transactions, categories, accounts }: Trans
         </div>
       </div>
 
-      {/* Панель фильтров: Все / Расход / Доход */}
       <div className="flex items-center gap-2 overflow-x-auto pb-1 [scrollbar-width:none]">
         <button
           onClick={() => setSelectedType('all')}
@@ -80,7 +74,6 @@ export function TransactionHistory({ transactions, categories, accounts }: Trans
           Доходы
         </button>
 
-        {/* Селект категории */}
         <select
           value={selectedCategoryId}
           onChange={(e) => setSelectedCategoryId(e.target.value)}
@@ -95,7 +88,6 @@ export function TransactionHistory({ transactions, categories, accounts }: Trans
         </select>
       </div>
 
-      {/* Список отфильтрованных операций */}
       <div className="flex flex-col gap-2.5">
         {filteredTransactions.length === 0 ? (
           <div className="rounded-2xl bg-white p-8 text-center border border-slate-100">
@@ -146,7 +138,6 @@ export function TransactionHistory({ transactions, categories, accounts }: Trans
                     </p>
                   </div>
 
-                  {/* Чек транзакции */}
                   <ShareTransaction
                     transaction={tx}
                     category={category || categories[0]}

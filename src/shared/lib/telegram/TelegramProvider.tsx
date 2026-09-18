@@ -28,9 +28,7 @@ export function TelegramProvider({ children }: { children: React.ReactNode }) {
     if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
       const tg = window.Telegram.WebApp;
       
-      // Сигнализируем Telegram, что приложение готово
       tg.ready();
-      // Раскрываем шторку на весь экран
       tg.expand();
 
       setWebApp(tg);
