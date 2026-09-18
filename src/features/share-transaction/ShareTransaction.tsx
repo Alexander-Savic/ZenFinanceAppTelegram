@@ -29,16 +29,26 @@ export const ShareTransaction: FC<ShareTransactionProps> = ({ transaction, categ
 
   const handleShare = () => {
     const text = `${category?.name ?? 'Операция'} — чек из Finance Tracker`;
+    const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`;
 
-    if (webApp) {
-      // открывает нативный диалог пересылки Telegram
-      webApp.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`);
+    // Безопасно приводим webApp к расширенному типу Telegram SDK
+    const tg = webApp as (typeof webApp & { openTelegramLink?: (url: string) => void; openLink?: (url: string) => void }) | null;
+
+    if (tg?.openTelegramLink) {
+      tg.openTelegramLink(shareUrl);
       return;
     }
+
+    if (tg?.openLink) {
+      tg.openLink(shareUrl);
+      return;
+    }
+
     if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
       navigator.share({ url, text }).catch(() => {});
       return;
     }
+
     handleCopy();
   };
 

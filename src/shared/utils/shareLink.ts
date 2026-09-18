@@ -1,15 +1,5 @@
 import type { Account, Category, Transaction } from '@/shared/types/finance';
 
-// ============================================================================
-// Публичная ссылка на "чек" операции.
-//
-// Осознанное архитектурное решение: вместо серверного хранилища с опаковым
-// токеном полезная нагрузка кодируется прямо в URL (base64url JSON). Это не
-// требует бэкенда и БД для MVP. В продакшене для отзываемых ссылок и более
-// компактных URL стоит заменить на серверный токен, резолвящийся через API —
-// сигнатуры buildShareUrl/parseSharePayload при этом не изменятся.
-// ============================================================================
-
 export interface SharePayload {
   transactionId: string;
   amount: number;
@@ -44,7 +34,6 @@ export function encodeSharePayload(payload: SharePayload): string {
   return toBase64Url(JSON.stringify(payload));
 }
 
-/** Возвращает null для повреждённого, неполного или неверно сформированного токена */
 export function parseSharePayload(token: string): SharePayload | null {
   try {
     const parsed = JSON.parse(fromBase64Url(token)) as Partial<SharePayload>;
@@ -71,7 +60,7 @@ export function buildSharePayload(
     accountName: account?.name ?? 'Счёт',
     date: transaction.date,
     comment: transaction.comment,
-    tags: transaction.tags,
+    tags: transaction.tags ?? [],
   };
 }
 

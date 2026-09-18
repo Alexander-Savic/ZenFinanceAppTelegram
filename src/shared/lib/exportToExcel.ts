@@ -70,7 +70,7 @@ export async function exportTransactionsToExcel(
       account: account?.name ?? '—',
       amount: t.type === 'expense' ? -t.amount : t.amount,
       currency: account?.currency ?? 'RUB',
-      tags: t.tags.join(', '),
+      tags: (t.tags ?? []).join(', '),
       comment: t.comment ?? '',
     });
 

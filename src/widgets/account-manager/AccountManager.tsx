@@ -2,9 +2,7 @@
 
 import { useState } from 'react';
 import { Plus, CreditCard, Wallet, Coins, PiggyBank, Trash2, Check } from 'lucide-react';
-import type { Account } from '@/shared/types/finance';
-
-export type AccountType = 'card' | 'cash' | 'crypto' | 'savings';
+import { Account, AccountType } from '@/shared/types/finance';
 
 interface AccountManagerProps {
   accounts: Account[];
@@ -57,9 +55,10 @@ export function AccountManager({ accounts, onAddAccount, onDeleteAccount }: Acco
     setIsAdding(false);
   };
 
-  const getAccountIcon = (type: string) => {
+  const getAccountIcon = (type: AccountType) => {
     switch (type) {
       case 'card':
+      case 'bank':
         return <CreditCard className="h-5 w-5" />;
       case 'cash':
         return <Wallet className="h-5 w-5" />;
@@ -101,6 +100,7 @@ export function AccountManager({ accounts, onAddAccount, onDeleteAccount }: Acco
 
               {/* Удаление счета */}
               <button
+                type="button"
                 onClick={() => onDeleteAccount(acc.id)}
                 className="absolute top-4 right-4 p-1.5 text-white/40 hover:text-white transition-colors"
                 title="Удалить счет"
@@ -115,6 +115,7 @@ export function AccountManager({ accounts, onAddAccount, onDeleteAccount }: Acco
       {/* Кнопка или Форма добавления нового счета */}
       {!isAdding ? (
         <button
+          type="button"
           onClick={() => setIsAdding(true)}
           className="flex items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-slate-200 py-3.5 text-xs font-semibold text-slate-500 transition hover:border-emerald-500 hover:text-emerald-600 bg-white"
         >

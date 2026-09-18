@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Plus, Minus } from 'lucide-react';
 import { BottomNav, type TabType } from '@/widgets/bottom-nav/BottomNav';
 import { CurrencyConverter } from '@/features/currency-converter/CurrencyConverter';
@@ -52,8 +52,23 @@ export default function HomePage() {
     { id: 'cat-4', name: 'Зарплата', icon: '💼', color: '#10B981', type: 'income' },
   ]);
 
-  const handleAddCategory = (newCat: Omit<Category, 'id'>) => {
-    setCategories((prev) => [...prev, { ...newCat, id: `cat-${Date.now()}` }]);
+  const handleAddCategory = (category: Partial<Category>) => {
+    if (!category.name) return;
+
+    const safeId = typeof crypto !== 'undefined' && crypto.randomUUID 
+      ? crypto.randomUUID() 
+      : `cat-${Date.now()}`;
+
+    const newCategory: Category = {
+      id: safeId,
+      name: category.name,
+      type: category.type ?? 'expense',
+      icon: category.icon ?? '📁',
+      color: category.color ?? '#6B7280',
+      budgetLimit: category.budgetLimit,
+    };
+
+    setCategories((prev) => [...prev, newCategory]);
   };
 
   const handleDeleteCategory = (id: string) => {
@@ -65,22 +80,26 @@ export default function HomePage() {
     { 
       id: 'tx-1', 
       amount: 4.5, 
-      type: 'expense' as const, 
+      type: 'expense', 
       categoryId: 'cat-1', 
       accountId: 'acc-1', 
       date: new Date().toISOString(), 
       comment: 'Кофейня', 
-      tags: ['Еда']
+      tags: ['Еда'],
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     },
     { 
       id: 'tx-2', 
       amount: 500, 
-      type: 'income' as const, 
+      type: 'income', 
       categoryId: 'cat-4', 
       accountId: 'acc-1', 
       date: new Date().toISOString(), 
       comment: 'Аванс', 
-      tags: ['Зарплата']
+      tags: ['Зарплата'],
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     },
   ]);
 
@@ -91,12 +110,23 @@ export default function HomePage() {
     totalSaved: 340,
   });
 
-  // Расчет общего баланса по счетам
-  const totalBalance = accounts.reduce((acc, curr) => acc + curr.balance, 0);
+  // Преобразование массива категорий в Record<string, Category> специально для BudgetOverview
+  const categoriesMap = useMemo(() => {
+    return categories.reduce<Record<string, Category>>((acc, cat) => {
+      acc[cat.id] = cat;
+      return acc;
+    }, {});
+  }, [categories]);
+
+  // Расчет общего баланса по USD счетам
+  const totalBalance = useMemo(() => {
+    return accounts
+      .filter((acc) => acc.currency === 'USD')
+      .reduce((acc, curr) => acc + curr.balance, 0);
+  }, [accounts]);
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] pb-24 text-slate-800">
-      {/* Главный контейнер */}
       <div className="mx-auto max-w-md px-4 pt-4">
 
         {/* ----------------- ВКЛАДКА: ОБЗОР (HOME) ----------------- */}
@@ -104,16 +134,16 @@ export default function HomePage() {
           <div className="flex flex-col gap-5">
             {/* Баланс и быстрые действия */}
             <div className="rounded-3xl bg-slate-900 p-6 text-white shadow-xl shadow-slate-900/10">
-              <p className="text-xs text-slate-400">Общий баланс</p>
+              <p className="text-xs text-slate-400">Общий баланс (USD)</p>
               <h1 className="mt-1 text-3xl font-bold tabular-nums text-emerald-400">
                 ${totalBalance.toLocaleString('en-US', { minimumFractionDigits: 2 })}
               </h1>
 
               <div className="mt-5 flex gap-3">
-                <button className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-emerald-600 py-3 text-sm font-semibold text-white transition hover:bg-emerald-500 active:scale-95">
+                <button type="button" className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-emerald-600 py-3 text-sm font-semibold text-white transition hover:bg-emerald-500 active:scale-95">
                   <Plus className="h-4 w-4" /> Доход
                 </button>
-                <button className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-rose-600 py-3 text-sm font-semibold text-white transition hover:bg-rose-500 active:scale-95">
+                <button type="button" className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-rose-600 py-3 text-sm font-semibold text-white transition hover:bg-rose-500 active:scale-95">
                   <Minus className="h-4 w-4" /> Расход
                 </button>
               </div>
@@ -132,10 +162,10 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* Блок бюджетирования по категориям (Перенесен сюда) */}
+            {/* BudgetOverview ждет Category[] */}
             <BudgetOverview categories={categories} transactions={transactions} />
 
-            {/* Модуль истории операций */}
+            {/* TransactionHistory ждет массивы Category[] и Account[] */}
             <div className="flex flex-col gap-2">
               <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">История операций</p>
               <TransactionHistory
@@ -163,7 +193,8 @@ export default function HomePage() {
         {activeTab === 'analytics' && (
           <div className="flex flex-col gap-5">
             <h2 className="text-xl font-bold text-slate-800">Аналитика и Графики</h2>
-            <AnalyticsCharts transactions={transactions} categories={categories} />
+            {/* AnalyticsCharts ждет Record<string, Category> */}
+            <AnalyticsCharts transactions={transactions} categories={categoriesMap} />
             <CurrencyConverter />
           </div>
         )}
@@ -213,7 +244,6 @@ export default function HomePage() {
 
       </div>
 
-      {/* Фиксированное нижнее меню навигации */}
       <BottomNav activeTab={activeTab} onChangeTab={setActiveTab} />
     </div>
   );

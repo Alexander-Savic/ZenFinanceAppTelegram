@@ -12,8 +12,7 @@ export type CurrencyCode =
 export type TransactionType = 'income' | 'expense' | 'transfer';
 
 /** Тип счёта */
-export type AccountType = 'card' | 'wallet' | 'crypto';
-
+export type AccountType = 'bank' | 'card' | 'cash' | 'crypto' | 'e-wallet' | 'savings';
 /** Поддерживаемые платёжные системы для карт (используется в AccountCard) */
 export type CardPaymentSystem = 'visa' | 'mastercard' | 'mir' | 'unionpay' | 'other';
 
@@ -43,15 +42,11 @@ export interface RecurringSettings {
 export interface Category {
   id: string;
   name: string;
-  /** Имя иконки (lucide-react) или emoji */
   icon: string;
-  /** HEX-цвет или CSS-переменная */
   color: string;
-  type: TransactionType;
-  /** Поддержка вложенных подкатегорий */
-  parentId?: string | null;
+  type: 'expense' | 'income' | 'transfer';
+  budgetLimit?: number;
 }
-
 /** Кастомный UI-дизайн счёта (используется в AccountCard, Шаг 2) */
 export interface AccountDesign {
   /** CSS-градиент фона карты, напр. "linear-gradient(135deg, #6D28D9, #DB2777)" */
@@ -72,37 +67,24 @@ export interface Account {
   name: string;
   type: AccountType;
   balance: number;
-  currency: CurrencyCode;
-  design: AccountDesign;
-  /** Скрыт ли счёт из общего баланса (архивный/накопительный) */
-  isArchived?: boolean;
-  /** Порядок отображения в списке */
-  order?: number;
-  createdAt: string;
-  updatedAt: string;
+  currency: string;
+  color?: string; // Добавлено для AccountManager
+  icon?: string;
 }
-
 /** Финансовая операция */
 export interface Transaction {
   id: string;
   amount: number;
-  type: TransactionType;
+  type: 'income' | 'expense' | 'transfer';
   categoryId: string;
-  tags: string[];
-  /** ISO 8601 дата операции */
+  accountId: string;
   date: string;
   comment?: string;
-  accountId: string;
-  /** Для type: 'transfer' — счёт назначения */
-  toAccountId?: string;
-  /** Является ли операция шаблоном для быстрого добавления (QuickActions, Шаг 2) */
-  isTemplate: boolean;
-  /** Настройки регулярности, если операция повторяющаяся */
-  recurring?: RecurringSettings | null;
-  /** Вложения: чеки, фото (URL или base64) */
-  attachments?: string[];
-  createdAt: string;
-  updatedAt: string;
+  tags?: string[];
+  // Делаем эти поля опциональными, чтобы не передавать их вручную в mock-данных
+  isTemplate?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 /** Бюджет — лимит по категории или по конкретному счёту */
@@ -127,12 +109,12 @@ export interface Goal {
   name: string;
   targetAmount: number;
   currentAmount: number;
-  currency: CurrencyCode;
-  deadline?: string | null;
+  currency: string;
   icon?: string;
   color?: string;
-  createdAt: string;
-  updatedAt: string;
+  deadline?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 /** Настройки "Копилки" — авто-округление транзакций в пользу цели */

@@ -1,28 +1,21 @@
 'use client';
 
 import { useState } from 'react';
-import { Plus, Trash2, Tag, PieChart } from 'lucide-react';
-
-export interface Category {
-  id: string;
-  name: string;
-  icon: string;
-  color: string;
-  type: 'expense' | 'income';
-  budgetLimit?: number; // Опциональный лимит бюджета
-}
+import { Category, TransactionType } from '@/shared/types/finance';
+import { Plus, Trash2 } from 'lucide-react';
 
 const DEFAULT_ICONS = ['☕', '🛒', '🚗', '🏠', '🎮', '💊', '✈️', '💼', '🎁', '📱', '🏋️', '🎓'];
 const DEFAULT_COLORS = ['#EF4444', '#F59E0B', '#10B981', '#3B82F6', '#6366F1', '#8B5CF6', '#EC4899', '#64748B'];
 
 interface CategoryManagerProps {
   categories: Category[];
-  onAddCategory: (category: Omit<Category, 'id'>) => void;
+  onAddCategory?: (category: Partial<Category>) => void;
   onDeleteCategory: (id: string) => void;
 }
 
 export function CategoryManager({ categories, onAddCategory, onDeleteCategory }: CategoryManagerProps) {
-  const [activeTab, setActiveTab] = useState<'expense' | 'income'>('expense');
+  // Ограничиваем типы согласно TransactionType
+  const [activeTab, setActiveTab] = useState<Extract<TransactionType, 'expense' | 'income'>>('expense');
   const [isAdding, setIsAdding] = useState(false);
 
   // Форма добавления
@@ -37,13 +30,15 @@ export function CategoryManager({ categories, onAddCategory, onDeleteCategory }:
     e.preventDefault();
     if (!name.trim()) return;
 
-    onAddCategory({
-      name: name.trim(),
-      icon,
-      color,
-      type: activeTab,
-      budgetLimit: budgetLimit ? Number(budgetLimit) : undefined,
-    });
+    if (onAddCategory) {
+      onAddCategory({
+        name: name.trim(),
+        icon,
+        color,
+        type: activeTab,
+        budgetLimit: budgetLimit ? Number(budgetLimit) : undefined,
+      });
+    }
 
     // Сброс формы
     setName('');
@@ -56,6 +51,7 @@ export function CategoryManager({ categories, onAddCategory, onDeleteCategory }:
       {/* Переключатель: Расходы / Доходы */}
       <div className="flex rounded-2xl bg-slate-200/60 p-1">
         <button
+          type="button"
           onClick={() => setActiveTab('expense')}
           className={`flex-1 rounded-xl py-2 text-xs font-semibold transition-all ${
             activeTab === 'expense'
@@ -66,6 +62,7 @@ export function CategoryManager({ categories, onAddCategory, onDeleteCategory }:
           Категории расходов
         </button>
         <button
+          type="button"
           onClick={() => setActiveTab('income')}
           className={`flex-1 rounded-xl py-2 text-xs font-semibold transition-all ${
             activeTab === 'income'
@@ -87,9 +84,9 @@ export function CategoryManager({ categories, onAddCategory, onDeleteCategory }:
             <div className="flex items-center gap-3">
               <div
                 className="flex h-11 w-11 items-center justify-center rounded-xl text-xl"
-                style={{ backgroundColor: `${cat.color}15`, color: cat.color }}
+                style={{ backgroundColor: `${cat.color || '#3B82F6'}15`, color: cat.color || '#3B82F6' }}
               >
-                {cat.icon}
+                {cat.icon || '📁'}
               </div>
               <div>
                 <p className="text-sm font-semibold text-slate-800">{cat.name}</p>
@@ -102,6 +99,7 @@ export function CategoryManager({ categories, onAddCategory, onDeleteCategory }:
             </div>
 
             <button
+              type="button"
               onClick={() => onDeleteCategory(cat.id)}
               className="p-2 text-slate-300 hover:text-rose-500 transition-colors"
               title="Удалить категорию"
@@ -115,6 +113,7 @@ export function CategoryManager({ categories, onAddCategory, onDeleteCategory }:
       {/* Кнопка или форма добавления новой категории */}
       {!isAdding ? (
         <button
+          type="button"
           onClick={() => setIsAdding(true)}
           className="flex items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-slate-200 py-3.5 text-xs font-semibold text-slate-500 transition hover:border-emerald-500 hover:text-emerald-600 bg-white/50"
         >
@@ -123,7 +122,9 @@ export function CategoryManager({ categories, onAddCategory, onDeleteCategory }:
       ) : (
         <form onSubmit={handleSubmit} className="flex flex-col gap-4 rounded-3xl bg-white p-5 border border-slate-100 shadow-md">
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-bold text-slate-800">Новая категория ({activeTab === 'expense' ? 'Расход' : 'Доход'})</h3>
+            <h3 className="text-sm font-bold text-slate-800">
+              Новая категория ({activeTab === 'expense' ? 'Расход' : 'Доход'})
+            </h3>
             <button
               type="button"
               onClick={() => setIsAdding(false)}
