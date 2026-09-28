@@ -1,26 +1,100 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/*
+ * Design tokens are plain CSS custom properties, re-exposed to Tailwind via
+ * @theme so `bg-surface`, `text-primary`, `bg-accent`, etc. work as utilities.
+ * Light/Dark and the six accent colors are runtime toggles (a class + a data
+ * attribute on <html>), not separate Tailwind builds — see ThemeSync.
+ */
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-bg: var(--zf-bg);
+  --color-surface: var(--zf-surface);
+  --color-surface-raised: var(--zf-surface-raised);
+  --color-border: var(--zf-border);
+  --color-primary: var(--zf-text-primary);
+  --color-secondary: var(--zf-text-secondary);
+  --color-accent: var(--zf-accent);
+  --color-accent-soft: var(--zf-accent-soft);
+  --color-accent-foreground: var(--zf-accent-foreground);
+  --color-danger: var(--zf-danger);
+  --color-success: var(--zf-success);
+  --color-warning: var(--zf-warning);
+
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* ---- Light mode (default) ---- */
+:root {
+  --zf-bg: #f5f6f8;
+  --zf-surface: #ffffff;
+  --zf-surface-raised: #ffffff;
+  --zf-border: #e6e8eb;
+  --zf-text-primary: #14161a;
+  --zf-text-secondary: #6b7280;
+  --zf-danger: #ef4444;
+  --zf-success: #22c55e;
+  --zf-warning: #f59e0b;
 }
 
+/* ---- Dark mode ---- */
+.dark {
+  --zf-bg: #0d0e11;
+  --zf-surface: #17191d;
+  --zf-surface-raised: #1f2126;
+  --zf-border: #2a2d33;
+  --zf-text-primary: #f5f6f7;
+  --zf-text-secondary: #9ca3af;
+  --zf-danger: #f87171;
+  --zf-success: #4ade80;
+  --zf-warning: #fbbf24;
+}
+
+/* ---- Accent colors (independent of light/dark) ---- */
+:root,
+[data-accent="indigo"] {
+  --zf-accent: #6366f1;
+  --zf-accent-soft: #6366f11a;
+  --zf-accent-foreground: #ffffff;
+}
+[data-accent="emerald"] {
+  --zf-accent: #10b981;
+  --zf-accent-soft: #10b9811a;
+  --zf-accent-foreground: #ffffff;
+}
+[data-accent="violet"] {
+  --zf-accent: #8b5cf6;
+  --zf-accent-soft: #8b5cf61a;
+  --zf-accent-foreground: #ffffff;
+}
+[data-accent="amber"] {
+  --zf-accent: #f59e0b;
+  --zf-accent-soft: #f59e0b1a;
+  --zf-accent-foreground: #14161a;
+}
+[data-accent="rose"] {
+  --zf-accent: #f43f5e;
+  --zf-accent-soft: #f43f5e1a;
+  --zf-accent-foreground: #ffffff;
+}
+[data-accent="cyan"] {
+  --zf-accent: #06b6d4;
+  --zf-accent-soft: #06b6d41a;
+  --zf-accent-foreground: #14161a;
+}
+
+html,
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  height: 100%;
+  background: var(--zf-bg);
+  color: var(--zf-text-primary);
+  overscroll-behavior-y: none; /* stop Telegram's WebView rubber-banding the whole app */
+}
+
+/* Telegram Mini Apps report safe-area insets via these env() vars on supported clients. */
+.safe-area-bottom {
+  padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+}
+.safe-area-top {
+  padding-top: max(0.5rem, env(safe-area-inset-top));
 }

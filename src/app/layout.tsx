@@ -1,37 +1,36 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import type { Metadata, Viewport } from "next";
 import Script from "next/script";
-import { TelegramProvider } from "@/shared/lib/telegram/TelegramProvider";
-import "./globals.css";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+import "./globals.css"
+import { Providers } from "./providers";
+import { AppGate } from "@/components/AppGate";
+import { BottomNav } from "@/components/BottomNav";
 
 export const metadata: Metadata = {
-  title: "Zen Finance Tracker",
-  description: "Удобный трекер финансов для Telegram Mini App",
+  title: "ZenFinance",
+  description: "Личные финансы прямо в Telegram",
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: "cover", // required for safe-area-inset-* to populate on iOS
+};
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html
-      lang="ru"
-      suppressHydrationWarning
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased dark`}
-    >
-      <body className="h-full bg-background text-foreground">
-        {children}
+    <html lang="ru" suppressHydrationWarning>
+      <head>
+        <Script src="https://telegram.org/js/telegram-web-app.js" strategy="beforeInteractive" />
+      </head>
+      <body className="font-sans antialiased">
+        <Providers>
+          <AppGate>
+            <main className="safe-area-top mx-auto min-h-dvh max-w-lg pb-24">{children}</main>
+            <BottomNav />
+          </AppGate>
+        </Providers>
       </body>
     </html>
   );
