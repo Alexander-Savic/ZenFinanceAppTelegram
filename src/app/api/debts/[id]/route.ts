@@ -6,9 +6,9 @@ export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = await params; // Развернули id через await
+  const { id } = await params;
   try {
-    const user = await requireUserId();
+    const user = await requireUserId(); 
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -17,7 +17,7 @@ export async function PATCH(
     const { status } = body;
 
     const debt = await prisma.debt.update({
-      where: { id: id, userId: user.id }, // Исправлено: заменили params.id на id
+      where: { id: id, userId: user }, 
       data: { status },
       include: { account: true },
     });
@@ -31,17 +31,17 @@ export async function PATCH(
 
 export async function DELETE(
   request: Request,
-  { params }: { params: Promise<{ id: string }> } // Исправлено: добавили Promise
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = await params; // Исправлено: развернули id через await
+  const { id } = await params;
   try {
-    const user = await requireUserId();
+    const user = await requireUserId(); 
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     await prisma.debt.delete({
-      where: { id: id, userId: user.id }, // Исправлено: заменили params.id на id
+      where: { id: id, userId: user },
     });
 
     return NextResponse.json({ success: true });
