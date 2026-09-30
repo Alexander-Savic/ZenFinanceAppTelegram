@@ -4,8 +4,9 @@ import { requireUserId } from '@/lib/session';
 
 export async function PATCH(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params; // Развернули id через await
   try {
     const user = await requireUserId();
     if (!user) {
@@ -16,7 +17,7 @@ export async function PATCH(
     const { status } = body;
 
     const debt = await prisma.debt.update({
-      where: { id: params.id, userId: user.id },
+      where: { id: id, userId: user.id }, // Исправлено: заменили params.id на id
       data: { status },
       include: { account: true },
     });
@@ -30,8 +31,9 @@ export async function PATCH(
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> } // Исправлено: добавили Promise
 ) {
+  const { id } = await params; // Исправлено: развернули id через await
   try {
     const user = await requireUserId();
     if (!user) {
@@ -39,7 +41,7 @@ export async function DELETE(
     }
 
     await prisma.debt.delete({
-      where: { id: params.id, userId: user.id },
+      where: { id: id, userId: user.id }, // Исправлено: заменили params.id на id
     });
 
     return NextResponse.json({ success: true });
