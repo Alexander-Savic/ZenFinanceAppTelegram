@@ -3,13 +3,15 @@ import { requireUserId } from '@/lib/session';
 
 export async function GET() {
   const user = await requireUserId();
-  if (!user) {
+  
+  if (!user || typeof user !== 'object') {
     return NextResponse.json({ error: 'Unauthenticated' }, { status: 401 });
   }
 
-  // Преобразуем BigInt для JSON-ответа
+  const userObj = user as Record<string, any>;
+
   return NextResponse.json({
-    ...user,
-    telegramId: user.telegramId ? user.telegramId.toString() : null,
+    ...userObj,
+    telegramId: userObj.telegramId ? userObj.telegramId.toString() : null,
   });
 }
