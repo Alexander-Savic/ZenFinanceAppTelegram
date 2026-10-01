@@ -184,7 +184,33 @@ export function TelegramProvider({ children }: { children: ReactNode }) {
 
 export function useTelegram(): TelegramContextValue {
   const ctx = useContext(TelegramContext);
-  if (!ctx) throw new Error("useTelegram must be used within a TelegramProvider");
+  
+  // Возвращаем фоллбек-объект, если компонент рендерится вне провайдера на сервере/при сборке
+  if (!ctx) {
+    return {
+      isReady: false,
+      initData: null,
+      unsafeUser: null,
+      colorScheme: "light",
+      themeParams: {},
+      platform: null,
+      haptic: {
+        impact: () => {},
+        notify: () => {},
+        selection: () => {},
+      },
+      mainButton: {
+        show: () => {},
+        hide: () => {},
+        setLoading: () => {},
+      },
+      backButton: {
+        show: () => {},
+        hide: () => {},
+      },
+    };
+  }
+  
   return ctx;
 }
 

@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
@@ -16,6 +16,12 @@ export function BottomSheet({
   title: string;
   children: ReactNode;
 }) {
+  let tg;
+  try {
+    tg = useTelegram();
+  } catch (e) {
+    tg = null;
+  }
   const { haptic } = useTelegram();
 
   return (
