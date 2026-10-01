@@ -14,16 +14,21 @@ export function CreateGoalSheet({ open, onClose }: { open: boolean; onClose: () 
   const [targetDate, setTargetDate] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const canSubmit = name.trim() && Number(targetAmount) > 0;
+
   async function handleSubmit() {
-    if (!name.trim() || !targetAmount || Number(targetAmount) <= 0) return;
+    if (!canSubmit) return;
     setIsSubmitting(true);
+
     const ok = await createGoal({
       name: name.trim(),
       targetAmount,
       currency: baseCurrency,
       targetDate: targetDate ? new Date(targetDate).toISOString() : undefined,
     });
+
     setIsSubmitting(false);
+
     if (ok) {
       setName("");
       setTargetAmount("");
@@ -33,18 +38,22 @@ export function CreateGoalSheet({ open, onClose }: { open: boolean; onClose: () 
   }
 
   return (
-    <BottomSheet open={open} onClose={onClose} title="Новая цель">
+    <BottomSheet open={open} onClose={onClose} title="Новая цель (копилка)">
       <div className="flex flex-col gap-4">
-        <Field label="Название">
+        <label className="flex flex-col gap-1.5">
+          <span className="text-xs font-medium text-secondary">Название цели</span>
           <input
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="Например, Новый ноутбук"
+            placeholder="Например, Новый ноутбук или Отпуск"
             className="w-full rounded-xl border border-border bg-bg px-3 py-2.5 text-sm text-primary"
           />
-        </Field>
+        </label>
 
-        <Field label={`Целевая сумма (${baseCurrency})`}>
+        <label className="flex flex-col gap-1.5">
+          <span className="text-xs font-medium text-secondary">
+            Сумма цели ({baseCurrency})
+          </span>
           <input
             inputMode="decimal"
             value={targetAmount}
@@ -52,38 +61,28 @@ export function CreateGoalSheet({ open, onClose }: { open: boolean; onClose: () 
             placeholder="0"
             className="w-full rounded-xl border border-border bg-bg px-3 py-2.5 text-sm text-primary"
           />
-        </Field>
+        </label>
 
-        <Field label="Дата (необязательно)">
+        <label className="flex flex-col gap-1.5">
+          <span className="text-xs font-medium text-secondary">
+            Целевая дата (необязательно)
+          </span>
           <input
             type="date"
             value={targetDate}
             onChange={(e) => setTargetDate(e.target.value)}
             className="w-full rounded-xl border border-border bg-bg px-3 py-2.5 text-sm text-primary"
           />
-        </Field>
-
-        <p className="text-xs text-secondary">
-          Округление покупок в копилку можно включить позже, в настройках цели.
-        </p>
+        </label>
 
         <button
           onClick={handleSubmit}
-          disabled={isSubmitting || !name.trim() || !targetAmount}
-          className="mt-1 w-full rounded-xl bg-accent py-3 text-sm font-semibold text-accent-foreground disabled:opacity-50"
+          disabled={isSubmitting || !canSubmit}
+          className="mt-2 w-full rounded-xl bg-accent py-3 text-sm font-semibold text-accent-foreground disabled:opacity-50"
         >
           {isSubmitting ? "Сохраняем…" : "Создать цель"}
         </button>
       </div>
     </BottomSheet>
-  );
-}
-
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <label className="flex flex-col gap-1.5">
-      <span className="text-xs font-medium text-secondary">{label}</span>
-      {children}
-    </label>
   );
 }

@@ -28,7 +28,7 @@ export default function BudgetsPage() {
   const isEmpty = tab === "budgets" ? budgets.length === 0 : goals.length === 0;
 
   return (
-    <div className="flex flex-col gap-5 px-4 pt-6">
+    <div className="flex flex-col gap-5 px-4 pt-6 pb-28">
       <h1 className="text-xl font-semibold text-primary">Бюджеты и цели</h1>
 
       <div className="flex gap-1 rounded-xl bg-surface p-1">
