@@ -54,7 +54,7 @@ export async function POST(request: Request) {
 
     const debt = await prisma.debt.create({
       data: {
-        userId: user.id,
+        userId: user,
         contactId: contact.id,
         direction, // 'I_OWE' | 'OWED_TO_ME'
         principal: amountDecimal,
