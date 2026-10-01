@@ -14,8 +14,29 @@ export default function HomePage() {
   const [sheetOpen, setSheetOpen] = useState(false);
 
   useEffect(() => {
-    fetchRecent();
-  }, [fetchRecent]);
+    if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
+      const tg = window.Telegram.WebApp;
+      tg.ready();
+      tg.expand();
+
+      console.log("Telegram initData:", tg.initData);
+
+      if (!tg.initData) {
+        console.warn("initData пустой! Приложение открыто вне Telegram?");
+        return;
+      }
+
+      // Вызов вашей функции авторизации
+      fetch('/api/auth/telegram', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ initData: tg.initData }),
+      })
+        .then((res) => res.json())
+        .then((data) => console.log("Auth response:", data))
+        .catch((err) => console.error("Auth error:", err));
+    }
+  }, []);
 
   return (
     <div className="flex flex-col gap-6 pt-4">
