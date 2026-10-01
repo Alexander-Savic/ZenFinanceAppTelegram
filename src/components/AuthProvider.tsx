@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, createContext, useContext } from 'react';
+import { useTelegram } from '@/lib/telegram-context';
 
 interface AuthContextType {
   user: any;
@@ -15,13 +16,17 @@ const AuthContext = createContext<AuthContextType>({
 });
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const { isReady, initData } = useTelegram();
   const [user, setUser] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     async function initAuth() {
+      // Не начинаем авторизацию, пока Telegram WebApp SDK полностью не готов
+      if (!isReady) return;
+
       try {
-        // 1. Проверяем существующую сессию
+        // 1. Проверяем существующую куку/сессию
         const meRes = await fetch('/api/auth/me');
         if (meRes.ok) {
           const userData = await meRes.json();
@@ -30,19 +35,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           return;
         }
 
-        // 2. Если сессии нет, проверяем, открыто ли в Telegram Mini App
-        const tg = (window as any).Telegram?.WebApp;
-        if (tg?.initData) {
+        // 2. Если сессии нет, отправляем валидировать initData
+        if (initData) {
           const tgRes = await fetch('/api/auth/telegram', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ initData: tg.initData }),
+            body: JSON.stringify({ initData }),
           });
 
           if (tgRes.ok) {
             const data = await tgRes.json();
             setUser(data.user);
+          } else {
+            console.error('Telegram auth failed with status:', tgRes.status);
           }
+        } else {
+          console.warn('initData отсутствует. Приложение открыто вне Telegram.');
         }
       } catch (error) {
         console.error('Auth initialization error:', error);
@@ -52,7 +60,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     initAuth();
-  }, []);
+  }, [isReady, initData]);
 
   const logout = async () => {
     await fetch('/api/auth/logout', { method: 'POST' });

@@ -29,6 +29,13 @@ function verifyTelegramWebAppData(telegramInitData: string): { isOk: boolean; us
 
   if (calculatedHash !== hash) return { isOk: false };
 
+  // Проверка актуальности данных (не старше 24 часов)
+  const authDate = parseInt(urlParams.get('auth_date') || '0', 10);
+  const currentTime = Math.floor(Date.now() / 1000);
+  if (currentTime - authDate > 86400) {
+    return { isOk: false };
+  }
+
   const userParam = urlParams.get('user');
   const user = userParam ? JSON.parse(userParam) : null;
 
@@ -72,7 +79,7 @@ export async function POST(request: Request) {
     // Создаём долгоживущую сессию (на 30 дней)
     const sessionToken = crypto.randomBytes(32).toString('hex');
     const tokenHash = crypto.createHash('sha256').update(sessionToken).digest('hex');
-    const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 дней
+    const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
 
     await prisma.session.create({
       data: {
@@ -83,12 +90,18 @@ export async function POST(request: Request) {
       },
     });
 
+    // Конвертируем BigInt в string перед JSON-сериализацией
+    const safeUser = {
+      ...user,
+      telegramId: user.telegramId.toString(),
+    };
+
     // Отправляем токен в зашифрованной/защищенной httpOnly куке
-    const response = NextResponse.json({ success: true, user });
+    const response = NextResponse.json({ success: true, user: safeUser });
     response.cookies.set('session_token', sessionToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      secure: true,
+      sameSite: 'none',
       expires: expiresAt,
       path: '/',
     });

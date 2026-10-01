@@ -4,6 +4,7 @@ import { useEffect, type ReactNode } from "react";
 import { TelegramProvider, useTelegram } from "@/lib/telegram-context";
 import { useUserStore } from "@/store/useUserStore";
 import { ThemeSync } from "@/components/ThemeSync";
+import { AuthProvider } from "@/components/AuthProvider";
 
 function AuthBootstrapper({ children }: { children: ReactNode }) {
   const { isReady, initData } = useTelegram();
@@ -19,13 +20,12 @@ function AuthBootstrapper({ children }: { children: ReactNode }) {
   return <>{children}</>;
 }
 
-export function Providers({ children }: { children: ReactNode }) {
+export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <TelegramProvider>
-      <AuthBootstrapper>
-        <ThemeSync />
+      <AuthProvider>
         {children}
-      </AuthBootstrapper>
+      </AuthProvider>
     </TelegramProvider>
   );
 }

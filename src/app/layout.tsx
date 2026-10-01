@@ -20,18 +20,14 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="ru" suppressHydrationWarning>
+    <html lang="ru">
       <head>
-        <Script src="https://telegram.org/js/telegram-web-app.js" strategy="beforeInteractive" />
+        <Script
+          src="https://telegram.org/js/telegram-web-app.js"
+          strategy="beforeInteractive"
+        />
       </head>
-      <body className="font-sans antialiased">
-        <Providers>
-          <AppGate>
-            <main className="safe-area-top mx-auto min-h-dvh max-w-lg pb-24">{children}</main>
-            <BottomNav />
-          </AppGate>
-        </Providers>
-      </body>
+      <body>{children}</body>
     </html>
   );
 }
