@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import Script from "next/script";
-import "./globals.css"
+import "./globals.css";
 import { Providers } from "./providers";
 import { AppGate } from "@/components/AppGate";
 import { BottomNav } from "@/components/BottomNav";
@@ -15,7 +15,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
-  viewportFit: "cover", // required for safe-area-inset-* to populate on iOS
+  viewportFit: "cover",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -28,7 +28,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body>
-        <Providers>{children}</Providers>
+        <Providers>
+          <AppGate>
+            {children}
+            <BottomNav />
+          </AppGate>
+        </Providers>
       </body>
     </html>
   );
