@@ -10,7 +10,7 @@ export async function GET() {
     }
 
     const debts = await prisma.debt.findMany({
-      where: { userId: user.id },
+      where: { userId: user },
       include: { contact: true },
       orderBy: { createdAt: 'desc' },
     });
@@ -38,13 +38,13 @@ export async function POST(request: Request) {
 
     // Ищем существующий контакт пользователя или создаем новый
     let contact = await prisma.contact.findFirst({
-      where: { userId: user.id, name: contactName },
+      where: { userId: user, name: contactName },
     });
 
     if (!contact) {
       contact = await prisma.contact.create({
         data: {
-          userId: user.id,
+          userId: user,
           name: contactName,
         },
       });
