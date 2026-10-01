@@ -43,7 +43,7 @@ export default function HomePage() {
       <header className="px-4">
         <p className="text-sm text-secondary">С возвращением,</p>
         <h1 className="text-2xl font-semibold text-primary">
-          {user?.firstName ?? "друг"} 👋
+          {user?.firstName ?? "Друг"} 👋
         </h1>
       </header>
 
