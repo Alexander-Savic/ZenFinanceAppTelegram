@@ -59,10 +59,14 @@ export function AddTransactionSheet({ open, onClose }: { open: boolean; onClose:
   }, [open]);
 
   useEffect(() => {
-    if (accounts.length === 0) return;
-    setAccountId((prev) => prev || accounts[0].id);
-    setFromAccountId((prev) => prev || accounts[0].id);
-    setToAccountId((prev) => prev || accounts[1]?.id || accounts[0].id);
+    const firstAccountId = accounts[0]?.id;
+    if (!firstAccountId) return;
+
+    const secondAccountId = accounts[1]?.id || firstAccountId;
+
+    setAccountId((prev) => prev || firstAccountId);
+    setFromAccountId((prev) => prev || firstAccountId);
+    setToAccountId((prev) => prev || secondAccountId);
   }, [accounts]);
 
   const relevantCategories = useMemo(

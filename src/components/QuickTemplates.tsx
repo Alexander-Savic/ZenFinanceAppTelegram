@@ -16,7 +16,7 @@ interface Template {
 
 export const QuickTemplates: React.FC = () => {
   const [templates, setTemplates] = useState<Template[]>([]);
-  const { addTransaction } = useTransactionStore();
+  const { createTransaction } = useTransactionStore();
 
   useEffect(() => {
     fetch('/api/templates')
@@ -31,13 +31,13 @@ export const QuickTemplates: React.FC = () => {
       window.Telegram.WebApp.HapticFeedback.impactOccurred('medium');
     }
 
-    await addTransaction({
-      amount: template.amount,
+    await createTransaction({
+      amount: String(template.amount),
       type: template.type,
       currency: template.currency,
       description: template.title,
       categoryId: template.categoryId,
-      accountId: template.accountId,
+      accountId: template.accountId ?? '',
     });
   };
 

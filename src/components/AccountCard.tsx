@@ -54,8 +54,10 @@ export function AccountCard({ account }: { account: AccountDTO }) {
         <p className="text-xl font-semibold tracking-tight">
           {formatBalance(account.balance, account.currency)}
         </p>
-        {account.maskedNumber && (
-          <p className="mt-0.5 text-xs tracking-wider opacity-75">{account.maskedNumber}</p>
+        {(account as any).maskedNumber && (
+          <p className="mt-0.5 text-xs tracking-wider opacity-75">
+            {(account as any).maskedNumber}
+          </p>
         )}
       </div>
 

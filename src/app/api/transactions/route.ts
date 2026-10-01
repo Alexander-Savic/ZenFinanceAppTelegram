@@ -63,8 +63,8 @@ export async function GET(req: NextRequest) {
   });
 
   return NextResponse.json({
-    transactions: serializeTransaction(transactions),
-    nextCursor: transactions.length === limit ? transactions[transactions.length - 1].id : null,
+    transactions: transactions.map((tx) => serializeTransaction(tx)),
+    nextCursor: transactions.length === limit ? transactions[transactions.length - 1]?.id ?? null : null,
   });
 }
 

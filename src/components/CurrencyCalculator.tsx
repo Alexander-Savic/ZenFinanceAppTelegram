@@ -5,16 +5,14 @@ import { useExchangeRates } from '@/hooks/useExchangeRates';
 import { ArrowRightLeft, RefreshCw } from 'lucide-react';
 
 export const CurrencyCalculator: React.FC = () => {
-  const { rates, isLoading, refetch } = useExchangeRates();
+  const { isLoading, isLive, getRate } = useExchangeRates();
   const [amount, setAmount] = useState<number>(100);
   const [fromCurrency, setFromCurrency] = useState<string>('USD');
   const [toCurrency, setToCurrency] = useState<string>('RUB');
 
   const convert = () => {
-    if (!rates) return 0;
-    const fromRate = rates[fromCurrency] || 1;
-    const toRate = rates[toCurrency] || 1;
-    return (amount / fromRate) * toRate;
+    const rate = getRate(fromCurrency, toCurrency) ?? 1;
+    return amount * rate;
   };
 
   return (
@@ -24,7 +22,9 @@ export const CurrencyCalculator: React.FC = () => {
           Конвертер валют
         </h3>
         <button
-          onClick={refetch}
+          onClick={() => {
+              
+          }}
           className="p-1 text-gray-400 hover:text-violet-500 transition"
         >
           <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />

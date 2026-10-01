@@ -10,7 +10,7 @@ export default function DebtsPage() {
 
   const [personName, setPersonName] = useState('');
   const [amount, setAmount] = useState('');
-  const [direction, setDirection] = useState<'OUTGOING' | 'INCOMING'>('OUTGOING'); 
+  const [direction, setDirection] = useState<'OWED_TO_ME' | 'I_OWE'>('OWED_TO_ME');
   const [dueDate, setDueDate] = useState('');
   const [description, setDescription] = useState('');
 
@@ -23,12 +23,11 @@ export default function DebtsPage() {
     if (!personName || !amount) return;
 
     await addDebt({
-      personName,
-      amount: parseFloat(amount),
-      type: direction === 'OUTGOING' ? 'OWES_ME' : 'I_OWE',
+      contactName: personName,
       direction: direction,
+      principal: parseFloat(amount), 
       dueDate: dueDate ? new Date(dueDate).toISOString() : undefined,
-      description,
+      note: description,
     });
 
     setPersonName('');
@@ -37,7 +36,7 @@ export default function DebtsPage() {
     setDescription('');
     setIsOpen(false);
   };
-
+  
   return (
     <div className="p-4 max-w-md mx-auto pb-24">
       <div className="flex items-center justify-between mb-6">
@@ -119,7 +118,7 @@ export default function DebtsPage() {
                 <div className="flex items-center justify-end gap-2 mt-3 pt-3 border-t border-gray-100 dark:border-zinc-700/50">
                   {debt.status !== 'PAID' && (
                     <button
-                      onClick={() => updateDebtStatus(debt.id, 'PAID')}
+                      onClick={() => updateDebtStatus(debt.id, 'SETTLED')}
                       className="flex items-center gap-1 text-xs text-emerald-600 font-medium hover:underline"
                     >
                       <CheckCircle2 className="w-3.5 h-3.5" />
@@ -177,8 +176,8 @@ export default function DebtsPage() {
                     onChange={(e) => setDirection(e.target.value as any)}
                     className="w-full mt-1 p-3 bg-gray-50 dark:bg-zinc-800 rounded-xl text-sm border-none focus:ring-2 focus:ring-violet-500"
                   >
-                    <option value="OUTGOING">Мне должны</option>
-                    <option value="INCOMING">Я должен</option>
+                    <option value="OWED_TO_ME">Мне должны</option>
+                    <option value="I_OWE">Я должен</option>
                   </select>
                 </div>
               </div>
