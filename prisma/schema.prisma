@@ -96,24 +96,24 @@ enum AccentColor {
 // ----------------------------------------------------------------------------
 
 model User {
-  id            String   @id @default(cuid())
-  telegramId    BigInt   @unique
-  username      String?
-  firstName     String?
-  lastName      String?
-  languageCode  String?
-  photoUrl      String?
-  isPremium     Boolean  @default(false)
-  email        String?  @unique
+  id           String  @id @default(cuid())
+  telegramId   BigInt  @unique
+  username     String?
+  firstName    String?
+  lastName     String?
+  languageCode String?
+  photoUrl     String?
+  isPremium    Boolean @default(false)
+  email        String? @unique
   passwordHash String?
 
   // Preferences
-  themeMode     ThemeMode   @default(AUTO)
-  accentColor   AccentColor @default(INDIGO)
-  baseCurrency  Currency    @default(USD)
+  themeMode    ThemeMode   @default(AUTO)
+  accentColor  AccentColor @default(INDIGO)
+  baseCurrency Currency    @default(USD)
 
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   sessions      Session[]
   accounts      Account[]
@@ -136,7 +136,7 @@ model Session {
   userId       String
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   tokenHash    String   @unique // hashed session token, never store raw
-  initDataHash String   // hash of validated initData payload for audit
+  initDataHash String // hash of validated initData payload for audit
   expiresAt    DateTime
   createdAt    DateTime @default(now())
 
@@ -149,15 +149,17 @@ model Session {
 // ----------------------------------------------------------------------------
 
 model Account {
-  id             String      @id @default(cuid())
-  userId         String
-  user           User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  name           String
-  type           AccountType
-  currency       Currency
-  balance        Decimal     @default(0) @db.Decimal(20, 8) // 8dp precision for crypto
-  isArchived     Boolean     @default(false)
+  debts Debt[]
+
+  name       String
+  type       AccountType
+  currency   Currency
+  balance    Decimal     @default(0) @db.Decimal(20, 8) // 8dp precision for crypto
+  isArchived Boolean     @default(false)
 
   // Visual presets
   colorGradientStart String? // hex
@@ -166,15 +168,15 @@ model Account {
   maskedNumber       String? // e.g. "**** 4242" — never store full PAN
 
   // Monthly spend limit / warning threshold
-  monthlyLimit       Decimal? @db.Decimal(20, 8)
-  limitWarningPct    Int?     @default(80) // percent threshold to trigger warning
+  monthlyLimit    Decimal? @db.Decimal(20, 8)
+  limitWarningPct Int?     @default(80) // percent threshold to trigger warning
 
-  sortOrder      Int         @default(0)
-  createdAt      DateTime    @default(now())
-  updatedAt      DateTime    @updatedAt
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  transactionsFrom Transaction[] @relation("FromAccount")
-  transactionsTo   Transaction[] @relation("ToAccount")
+  transactionsFrom Transaction[]  @relation("FromAccount")
+  transactionsTo   Transaction[]  @relation("ToAccount")
   subscriptions    Subscription[]
   goals            Goal[]
   templates        Template[]
@@ -188,25 +190,25 @@ model Account {
 // ----------------------------------------------------------------------------
 
 model Category {
-  id          String    @id @default(cuid())
-  userId      String
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  name        String
-  type        TransactionType // INCOME or EXPENSE (categories aren't used for TRANSFER)
-  iconKey     String
-  colorHex    String
+  name     String
+  type     TransactionType // INCOME or EXPENSE (categories aren't used for TRANSFER)
+  iconKey  String
+  colorHex String
 
-  parentId    String?
-  parent      Category? @relation("CategoryHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
-  children    Category[] @relation("CategoryHierarchy")
+  parentId String?
+  parent   Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
+  children Category[] @relation("CategoryHierarchy")
 
-  isSystem    Boolean   @default(false) // seeded default categories
-  createdAt   DateTime  @default(now())
+  isSystem  Boolean  @default(false) // seeded default categories
+  createdAt DateTime @default(now())
 
-  transactions  Transaction[]
-  budgets       Budget[]
-  templates     Template[]
+  transactions Transaction[]
+  budgets      Budget[]
+  templates    Template[]
 
   @@index([userId])
   @@index([parentId])
@@ -243,36 +245,36 @@ model TransactionTag {
 // ----------------------------------------------------------------------------
 
 model Transaction {
-  id             String          @id @default(cuid())
-  userId         String
-  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  type           TransactionType
-  amount         Decimal         @db.Decimal(20, 8) // in fromAccount's currency
-  currency       Currency
+  type     TransactionType
+  amount   Decimal         @db.Decimal(20, 8) // in fromAccount's currency
+  currency Currency
 
   // For TRANSFER: fromAccount debited, toAccount credited (with conversion)
-  fromAccountId  String?
-  fromAccount    Account?        @relation("FromAccount", fields: [fromAccountId], references: [id], onDelete: SetNull)
-  toAccountId    String?
-  toAccount      Account?        @relation("ToAccount", fields: [toAccountId], references: [id], onDelete: SetNull)
-  exchangeRate   Decimal?        @db.Decimal(20, 8) // applied rate for TRANSFER conversions
+  fromAccountId String?
+  fromAccount   Account? @relation("FromAccount", fields: [fromAccountId], references: [id], onDelete: SetNull)
+  toAccountId   String?
+  toAccount     Account? @relation("ToAccount", fields: [toAccountId], references: [id], onDelete: SetNull)
+  exchangeRate  Decimal? @db.Decimal(20, 8) // applied rate for TRANSFER conversions
 
-  categoryId     String?
-  category       Category?       @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  categoryId String?
+  category   Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
 
-  description    String?
-  occurredAt     DateTime        @default(now())
-  createdAt      DateTime        @default(now())
-  updatedAt      DateTime        @updatedAt
+  description String?
+  occurredAt  DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
-  subscriptionId String?         // set if generated by a recurring subscription run
-  subscription   Subscription?   @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
+  subscriptionId String? // set if generated by a recurring subscription run
+  subscription   Subscription? @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
 
-  debtId         String?         // set if this is a repayment against a Debt
-  debt           Debt?           @relation(fields: [debtId], references: [id], onDelete: SetNull)
+  debtId String? // set if this is a repayment against a Debt
+  debt   Debt?   @relation(fields: [debtId], references: [id], onDelete: SetNull)
 
-  tags           TransactionTag[]
+  tags TransactionTag[]
 
   @@index([userId, occurredAt])
   @@index([fromAccountId])
@@ -286,29 +288,29 @@ model Transaction {
 // ----------------------------------------------------------------------------
 
 model Subscription {
-  id            String             @id @default(cuid())
-  userId        String
-  user          User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  name          String
-  type          TransactionType    // INCOME (salary) or EXPENSE (bill)
-  amount        Decimal            @db.Decimal(20, 8)
-  currency      Currency
+  name     String
+  type     TransactionType // INCOME (salary) or EXPENSE (bill)
+  amount   Decimal         @db.Decimal(20, 8)
+  currency Currency
 
-  accountId     String
-  account       Account            @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  accountId String
+  account   Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
 
-  interval      RecurrenceInterval
-  nextRunAt     DateTime
-  lastRunAt     DateTime?
-  status        SubscriptionStatus @default(ACTIVE)
+  interval  RecurrenceInterval
+  nextRunAt DateTime
+  lastRunAt DateTime?
+  status    SubscriptionStatus @default(ACTIVE)
 
-  reminderDaysBefore Int?          @default(1)
+  reminderDaysBefore Int? @default(1)
 
-  createdAt     DateTime           @default(now())
-  updatedAt     DateTime           @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  transactions  Transaction[]
+  transactions Transaction[]
 
   @@index([userId, nextRunAt])
   @@index([status, nextRunAt]) // fast lookup for the cron sweep
@@ -320,21 +322,21 @@ model Subscription {
 // ----------------------------------------------------------------------------
 
 model Budget {
-  id          String    @id @default(cuid())
-  userId      String
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  name        String
-  categoryId  String?   // null = overall monthly budget
-  category    Category? @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  name       String
+  categoryId String? // null = overall monthly budget
+  category   Category? @relation(fields: [categoryId], references: [id], onDelete: Cascade)
 
-  limitAmount Decimal   @db.Decimal(20, 8)
+  limitAmount Decimal  @db.Decimal(20, 8)
   currency    Currency
-  periodStart DateTime  // first day of the budget period
+  periodStart DateTime // first day of the budget period
   periodEnd   DateTime
 
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([userId, periodStart, periodEnd])
   @@map("budgets")
@@ -345,9 +347,9 @@ model Budget {
 // ----------------------------------------------------------------------------
 
 model Goal {
-  id            String     @id @default(cuid())
-  userId        String
-  user          User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   name          String
   targetAmount  Decimal    @db.Decimal(20, 8)
@@ -362,11 +364,11 @@ model Goal {
   roundUpAccount   Account? @relation(fields: [roundUpAccountId], references: [id], onDelete: SetNull)
   roundUpToNearest Decimal? @db.Decimal(10, 2) // e.g. round up to nearest 10.00
 
-  iconKey       String?
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @updatedAt
+  iconKey   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  deposits      GoalDeposit[]
+  deposits GoalDeposit[]
 
   @@index([userId, status])
   @@map("goals")
@@ -389,40 +391,43 @@ model GoalDeposit {
 // ----------------------------------------------------------------------------
 
 model Contact {
-  id        String   @id @default(cuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  name      String
+  id               String   @id @default(cuid())
+  userId           String
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name             String
   telegramUsername String?
-  phone     String?
-  createdAt DateTime @default(now())
+  phone            String?
+  createdAt        DateTime @default(now())
 
-  debts     Debt[]
+  debts Debt[]
 
   @@index([userId])
   @@map("contacts")
 }
 
 model Debt {
-  id            String        @id @default(cuid())
-  userId        String
-  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  direction     DebtDirection
-  contactId     String?
-  contact       Contact?      @relation(fields: [contactId], references: [id], onDelete: SetNull)
+  accountId String?
+  account   Account? @relation(fields: [accountId], references: [id], onDelete: SetNull)
 
-  principal     Decimal       @db.Decimal(20, 8)
-  remaining     Decimal       @db.Decimal(20, 8)
-  currency      Currency
-  dueDate       DateTime?
-  status        DebtStatus    @default(ACTIVE)
-  note          String?
+  direction DebtDirection
+  contactId String?
+  contact   Contact?      @relation(fields: [contactId], references: [id], onDelete: SetNull)
 
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
+  principal Decimal    @db.Decimal(20, 8)
+  remaining Decimal    @db.Decimal(20, 8)
+  currency  Currency
+  dueDate   DateTime?
+  status    DebtStatus @default(ACTIVE)
+  note      String?
 
-  repayments    Transaction[] // transactions with debtId set
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  repayments Transaction[] // transactions with debtId set
 
   @@index([userId, status])
   @@map("debts")
@@ -433,22 +438,22 @@ model Debt {
 // ----------------------------------------------------------------------------
 
 model Template {
-  id          String          @id @default(cuid())
-  userId      String
-  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  label       String          // e.g. "Morning Coffee"
-  type        TransactionType
-  amount      Decimal         @db.Decimal(20, 8)
-  currency    Currency
-  accountId   String?
-  account     Account?        @relation(fields: [accountId], references: [id], onDelete: SetNull)
-  categoryId  String?
-  category    Category?       @relation(fields: [categoryId], references: [id], onDelete: SetNull)
-  iconKey     String?
-  sortOrder   Int             @default(0)
+  label      String // e.g. "Morning Coffee"
+  type       TransactionType
+  amount     Decimal         @db.Decimal(20, 8)
+  currency   Currency
+  accountId  String?
+  account    Account?        @relation(fields: [accountId], references: [id], onDelete: SetNull)
+  categoryId String?
+  category   Category?       @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  iconKey    String?
+  sortOrder  Int             @default(0)
 
-  createdAt   DateTime        @default(now())
+  createdAt DateTime @default(now())
 
   @@index([userId])
   @@map("templates")
