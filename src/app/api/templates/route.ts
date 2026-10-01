@@ -10,7 +10,7 @@ export async function GET() {
     }
 
     const templates = await prisma.template.findMany({
-      where: { userId: user.id },
+      where: { userId: user },
       include: { category: true, account: true },
       orderBy: { sortOrder: 'asc' },
     });
@@ -38,7 +38,7 @@ export async function POST(request: Request) {
 
     const template = await prisma.template.create({
       data: {
-        userId: user.id,
+        userId: user,
         label,
         type: type || 'EXPENSE',
         amount: parseFloat(amount),
