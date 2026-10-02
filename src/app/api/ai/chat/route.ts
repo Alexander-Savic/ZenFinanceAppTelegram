@@ -18,7 +18,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Сообщение не должно быть пустым" }, { status: 400 });
   }
 
-  // Получаем финансовый контекст пользователя
   const accounts = await prisma.account.findMany({ where: { userId, isArchived: false } });
   const goals = await prisma.goal.findMany({ where: { userId, status: "IN_PROGRESS" } });
   const recentTransactions = await prisma.transaction.findMany({
@@ -36,34 +35,35 @@ export async function POST(req: NextRequest) {
 Отвечай кратко, доброжелательно и по делу на русском языке.`;
 
   try {
-    const apiKey = process.env.OPENAI_API_KEY;
+    const apiKey = process.env.DEEPSEEK_API_KEY;
     if (!apiKey) {
       return NextResponse.json({
-        reply: "ИИ-ассистент работает в демо-режиме. Для подключения добавьте OPENAI_API_KEY в переменные окружения (.env).",
+        reply: "ИИ-ассистент работает в демо-режиме. Укажите DEEPSEEK_API_KEY в файле .env.",
       });
     }
 
-    const res = await fetch("https://api.openai.com/v1/chat/completions", {
+    const res = await fetch("https://api.deepseek.com/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: "gpt-4o-mini",
+        model: "deepseek-chat",
         messages: [
           { role: "system", content: contextPrompt },
           { role: "user", content: message },
         ],
+        stream: false,
       }),
     });
 
     const data = await res.json();
-    const reply = data.choices?.[0]?.message?.content || "Не удалось получить ответ от ИИ.";
+    const reply = data.choices?.[0]?.message?.content || "Не удалось получить ответ от DeepSeek.";
 
     return NextResponse.json({ reply });
   } catch (err) {
-    console.error("AI Assistant Error:", err);
-    return NextResponse.json({ error: "Ошибка сервиса ИИ" }, { status: 500 });
+    console.error("DeepSeek Assistant Error:", err);
+    return NextResponse.json({ error: "Ошибка сервиса DeepSeek" }, { status: 500 });
   }
 }
