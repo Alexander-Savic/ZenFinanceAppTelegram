@@ -1,7 +1,7 @@
 "use client";
 
-import { Wallet, CreditCard, Bitcoin, PiggyBank, TrendingUp } from "lucide-react";
-import type { AccountDTO } from "@/store/useAccountStore";
+import { Wallet, CreditCard, Bitcoin, PiggyBank, TrendingUp, Trash2 } from "lucide-react";
+import { useAccountStore, type AccountDTO } from "@/store/useAccountStore";
 import { cn } from "@/lib/utils";
 
 const TYPE_ICON: Record<AccountDTO["type"], typeof Wallet> = {
@@ -30,8 +30,10 @@ function formatBalance(balance: string, currency: string) {
 }
 
 export function AccountCard({ account }: { account: AccountDTO }) {
-  const Icon = TYPE_ICON[account.type];
-  const [start, end] = DEFAULT_GRADIENT[account.type];
+  const deleteAccount = useAccountStore((s) => s.deleteAccount);
+
+  const Icon = TYPE_ICON[account.type] ?? Wallet;
+  const [start, end] = DEFAULT_GRADIENT[account.type] ?? ["#6366f1", "#4338ca"];
   const gradientStart = account.colorGradientStart ?? start;
   const gradientEnd = account.colorGradientEnd ?? end;
 
@@ -40,14 +42,32 @@ export function AccountCard({ account }: { account: AccountDTO }) {
   const usagePct = limitNum ? Math.min(100, (balanceNum / limitNum) * 100) : null;
   const isNearLimit = usagePct !== null && usagePct >= 80;
 
+  async function handleDelete(e: React.MouseEvent) {
+    e.stopPropagation();
+    if (confirm(`Удалить счёт "${account.name}"?`)) {
+      await deleteAccount(account.id);
+    }
+  }
+
   return (
     <div
-      className="relative flex h-36 w-56 shrink-0 flex-col justify-between overflow-hidden rounded-2xl p-4 text-white shadow-lg"
+      className="group relative flex h-36 w-56 shrink-0 flex-col justify-between overflow-hidden rounded-2xl p-4 text-white shadow-lg"
       style={{ background: `linear-gradient(135deg, ${gradientStart}, ${gradientEnd})` }}
     >
       <div className="flex items-center justify-between">
-        <span className="text-sm font-medium opacity-90">{account.name}</span>
-        <Icon className="h-5 w-5 opacity-90" />
+        <span className="text-sm font-medium opacity-90 truncate max-w-[130px]">
+          {account.name}
+        </span>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleDelete}
+            className="rounded-lg p-1 opacity-80 hover:bg-white/20 hover:opacity-100 transition-all"
+            title="Удалить счёт"
+          >
+            <Trash2 className="h-4 w-4" />
+          </button>
+          <Icon className="h-5 w-5 opacity-90" />
+        </div>
       </div>
 
       <div>

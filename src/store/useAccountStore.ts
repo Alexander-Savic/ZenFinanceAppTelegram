@@ -4,24 +4,11 @@ export interface AccountDTO {
   id: string;
   name: string;
   type: "CASH" | "CARD" | "CRYPTO" | "SAVINGS" | "INVESTMENT";
+  balance: string;
   currency: string;
-  balance: string; // Decimal serialized as string — never coerce to number for math
+  monthlyLimit?: string | null;
   colorGradientStart?: string | null;
   colorGradientEnd?: string | null;
-  iconKey?: string | null;
-  monthlyLimit?: string | null;
-}
-
-export interface CreateAccountInput {
-  name: string;
-  type: AccountDTO["type"];
-  currency: string;
-  initialBalance?: string;
-  colorGradientStart?: string;
-  colorGradientEnd?: string;
-  iconKey?: string;
-  maskedNumber?: string;
-  monthlyLimit?: string;
 }
 
 interface AccountState {
@@ -29,9 +16,7 @@ interface AccountState {
   isLoading: boolean;
   error: string | null;
   fetchAccounts: () => Promise<void>;
-  createAccount: (input: CreateAccountInput) => Promise<boolean>;
-  upsertAccount: (account: AccountDTO) => void;
-  removeAccount: (id: string) => void;
+  deleteAccount: (id: string) => Promise<boolean>;
 }
 
 export const useAccountStore = create<AccountState>((set, get) => ({
@@ -43,44 +28,28 @@ export const useAccountStore = create<AccountState>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const res = await fetch("/api/accounts", { credentials: "include" });
-      if (!res.ok) throw new Error(`Failed to load accounts (${res.status})`);
-      const data = await res.json();
-      set({ accounts: data.accounts ?? data, isLoading: false });
+      if (!res.ok) throw new Error("Не удалось загрузить счета");
+      const { accounts } = await res.json();
+      set({ accounts, isLoading: false });
     } catch (err) {
       set({ error: (err as Error).message, isLoading: false });
     }
   },
 
-  createAccount: async (input) => {
+  deleteAccount: async (id: string) => {
     try {
-      const res = await fetch("/api/accounts", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(input),
+      const res = await fetch(`/api/accounts/${id}`, {
+        method: "DELETE",
+        credentials: "include",
       });
-      if (!res.ok) throw new Error("Не удалось создать счёт");
-      const { account } = await res.json();
-      set({ accounts: [...get().accounts, account] });
+
+      if (!res.ok) throw new Error("Не удалось удалить счёт");
+
+      set({ accounts: get().accounts.filter((a) => a.id !== id) });
       return true;
     } catch (err) {
-      set({ error: (err as Error).message });
+      console.error("Delete account error:", err);
       return false;
     }
-  },
-
-  upsertAccount: (account) => {
-    const existing = get().accounts;
-    const idx = existing.findIndex((a) => a.id === account.id);
-    if (idx === -1) {
-      set({ accounts: [...existing, account] });
-    } else {
-      const next = [...existing];
-      next[idx] = account;
-      set({ accounts: next });
-    }
-  },
-
-  removeAccount: (id) => {
-    set({ accounts: get().accounts.filter((a) => a.id !== id) });
   },
 }));

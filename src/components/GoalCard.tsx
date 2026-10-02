@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { PiggyBank, Check } from "lucide-react";
+import { PiggyBank, Check, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useGoalStore, type GoalDTO } from "@/store/useGoalStore";
 
@@ -11,6 +11,8 @@ function formatMoney(n: number, currency: string) {
 
 export function GoalCard({ goal }: { goal: GoalDTO }) {
   const addDeposit = useGoalStore((s) => s.addDeposit);
+  const deleteGoal = useGoalStore((s) => s.deleteGoal);
+
   const [depositOpen, setDepositOpen] = useState(false);
   const [amount, setAmount] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -31,8 +33,14 @@ export function GoalCard({ goal }: { goal: GoalDTO }) {
     }
   }
 
+  async function handleDelete() {
+    if (confirm(`Удалить копилку "${goal.name}"?`)) {
+      await deleteGoal(goal.id);
+    }
+  }
+
   return (
-    <div className="rounded-2xl bg-surface p-4">
+    <div className="rounded-2xl bg-surface p-4 border border-border/50">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-accent-soft text-accent">
@@ -47,11 +55,23 @@ export function GoalCard({ goal }: { goal: GoalDTO }) {
             )}
           </div>
         </div>
-        {isCompleted && (
-          <span className="flex items-center gap-1 rounded-full bg-success/15 px-2 py-0.5 text-xs font-medium text-success">
-            <Check className="h-3 w-3" /> Достигнуто
-          </span>
-        )}
+
+        <div className="flex items-center gap-1.5">
+          {isCompleted && (
+            <span className="flex items-center gap-1 rounded-full bg-success/15 px-2 py-0.5 text-xs font-medium text-success">
+              <Check className="h-3 w-3" /> Достигнуто
+            </span>
+          )}
+
+          {/* Кнопка удаления копилки */}
+          <button
+            onClick={handleDelete}
+            className="rounded-lg p-1.5 text-secondary hover:bg-danger/10 hover:text-danger transition-colors"
+            title="Удалить копилку"
+          >
+            <Trash2 className="h-4 w-4" />
+          </button>
+        </div>
       </div>
 
       <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-bg">

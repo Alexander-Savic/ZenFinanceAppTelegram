@@ -49,49 +49,54 @@ export async function POST(req: NextRequest) {
 
     const contextPrompt = `Ты — финансовый ассистент приложения ZenFinance.
 Данные пользователя:
-- Счета: ${JSON.stringify(cleanAccounts)}
-- Накопительные цели: ${JSON.stringify(cleanGoals)}
-- Последние 10 операций: ${JSON.stringify(cleanTx)}
+- Счета: 
+${JSON.stringify(cleanAccounts)}
+- Накопительные цели: 
+${JSON.stringify(cleanGoals)}
+- Последние 10 операций: 
+${JSON.stringify(cleanTx)}
 
 Отвечай кратко, доброжелательно и по делу на русском языке.`;
 
-    const apiKey = process.env.DEEPSEEK_API_KEY;
+    const apiKey = process.env.OPENROUTER_API_KEY;
     if (!apiKey) {
       return NextResponse.json({
-        reply: "Укажите DEEPSEEK_API_KEY в файле .env или переменных Vercel.",
+        reply: "Укажите OPENROUTER_API_KEY в файле .env.local или в настройках Vercel.",
       });
     }
 
-    const res = await fetch("https://api.deepseek.com/chat/completions", {
+    const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${apiKey}`,
+        "HTTP-Referer": process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
+        "X-Title": "ZenFinance",
       },
       body: JSON.stringify({
-        model: "deepseek-chat",
+        model: "qwen/qwen-2.5-coder-32b-instruct:free",
         messages: [
           { role: "system", content: contextPrompt },
           { role: "user", content: message },
         ],
-        stream: false,
+        temperature: 0.3,
       }),
     });
 
     if (!res.ok) {
       const errorText = await res.text();
-      console.error("DeepSeek API Error:", res.status, errorText);
+      console.error("OpenRouter API Error:", res.status, errorText);
       return NextResponse.json({
-        reply: `Ошибка ИИ (${res.status}): Пожалуйста, проверьте баланс аккаунта на platform.deepseek.com`,
+        reply: `Ошибка ИИ (${res.status}): Не удалось обработать запрос через OpenRouter.`,
       });
     }
 
     const data = await res.json();
-    const reply = data.choices?.[0]?.message?.content || "Не удалось получить ответ от DeepSeek.";
+    const reply = data.choices?.[0]?.message?.content || "Не удалось получить ответ от ассистента.";
 
     return NextResponse.json({ reply });
   } catch (err) {
-    console.error("DeepSeek Assistant Error:", err);
-    return NextResponse.json({ error: "Ошибка сервиса DeepSeek" }, { status: 500 });
+    console.error("AI Assistant Error:", err);
+    return NextResponse.json({ error: "Ошибка сервиса ИИ" }, { status: 500 });
   }
 }
