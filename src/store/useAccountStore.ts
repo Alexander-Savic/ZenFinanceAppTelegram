@@ -42,7 +42,9 @@ export const useAccountStore = create<AccountState>((set, get) => ({
   fetchAccounts: async () => {
     set({ isLoading: true, error: null });
     try {
-      const res = await fetch("/api/accounts");
+      const res = await fetch("/api/accounts", {
+        credentials: "include",
+      });
       if (!res.ok) throw new Error(`Failed to load accounts (${res.status})`);
       const { accounts } = await res.json();
       set({ accounts, isLoading: false });

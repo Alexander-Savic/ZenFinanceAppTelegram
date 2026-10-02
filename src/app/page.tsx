@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Plus } from "lucide-react";
 import { useUserStore } from "@/store/useUserStore";
+import { useAccountStore } from "@/store/useAccountStore";
 import { useTransactionStore } from "@/store/useTransactionStore";
 import { AccountsRow } from "@/components/AccountsRow";
 import { TransactionRow } from "@/components/TransactionRow";
@@ -10,33 +11,19 @@ import { AddTransactionSheet } from "@/components/AddTransactionSheet";
 
 export default function HomePage() {
   const user = useUserStore((s) => s.user);
+  const status = useUserStore((s) => s.status);
+
+  const fetchAccounts = useAccountStore((s) => s.fetchAccounts);
   const { recent, isLoading, fetchRecent } = useTransactionStore();
+
   const [sheetOpen, setSheetOpen] = useState(false);
 
   useEffect(() => {
-    if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
-      const tg = window.Telegram.WebApp;
-      tg.ready();
-      tg.expand();
-
-      console.log("Telegram initData:", tg.initData);
-
-      if (!tg.initData) {
-        console.warn("initData пустой! Приложение открыто вне Telegram?");
-        return;
-      }
-
-      // Вызов вашей функции авторизации
-      fetch('/api/auth/telegram', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ initData: tg.initData }),
-      })
-        .then((res) => res.json())
-        .then((data) => console.log("Auth response:", data))
-        .catch((err) => console.error("Auth error:", err));
+    if (status === "authenticated") {
+      fetchAccounts();
+      fetchRecent();
     }
-  }, []);
+  }, [status, fetchAccounts, fetchRecent]);
 
   return (
     <div className="flex flex-col gap-6 pt-4 pb-28">
