@@ -26,7 +26,7 @@ export default function SubscriptionsPage() {
   // Календарь: все срабатывания активных подписок на ближайшие 30 дней.
   const upcoming = useMemo(() => {
     const horizon = addDays(new Date(), 30);
-    return subscriptions
+    return (subscriptions || [])
       .filter((s) => s.status === "ACTIVE")
       .flatMap((s) => occurrencesUntil(s.nextRunAt, s.interval, horizon).map((date) => ({ date, sub: s })))
       .sort((a, b) => a.date.getTime() - b.date.getTime());
@@ -43,7 +43,7 @@ export default function SubscriptionsPage() {
   }, [upcoming]);
 
   return (
-    <div className="flex flex-col gap-6 px-4 pt-6">
+    <div className="flex flex-col gap-6 px-4 pt-6 pb-24">
       <h1 className="text-xl font-semibold text-primary">Подписки</h1>
 
       <section className="flex flex-col gap-2">
@@ -80,7 +80,7 @@ export default function SubscriptionsPage() {
       <section className="flex flex-col gap-2">
         <h2 className="text-sm font-medium text-secondary">Все регулярные операции</h2>
 
-        {isLoading && subscriptions.length === 0 && (
+        {isLoading && (subscriptions || []).length === 0 && (
           <div className="flex flex-col gap-2">
             {[0, 1].map((i) => (
               <div key={i} className="h-20 animate-pulse rounded-2xl bg-surface" />
@@ -88,13 +88,13 @@ export default function SubscriptionsPage() {
           </div>
         )}
         {error && <p className="text-xs text-danger">{error}</p>}
-        {!isLoading && subscriptions.length === 0 && (
+        {!isLoading && (subscriptions || []).length === 0 && (
           <div className="rounded-2xl bg-surface p-6 text-center text-sm text-secondary">
             Пока нет регулярных операций — добавьте подписку или зарплату
           </div>
         )}
 
-        {subscriptions.map((s) => (
+        {(subscriptions || []).map((s) => (
           <div
             key={s.id}
             className={cn("flex items-center justify-between rounded-2xl bg-surface p-3", s.status === "PAUSED" && "opacity-60")}
@@ -102,11 +102,11 @@ export default function SubscriptionsPage() {
             <div>
               <p className="text-sm font-medium text-primary">{s.name}</p>
               <p className="text-xs text-secondary">
-                {INTERVAL_LABEL[s.interval]} · {s.account.name}
+                {INTERVAL_LABEL[s.interval]} · {s.account?.name ?? "Основной счет"}
                 {s.status === "PAUSED" && " · на паузе"}
               </p>
               <p className="text-xs text-secondary">
-                Следующий: {format(new Date(s.nextRunAt), "d MMM", { locale: ru })}
+                Следующий: {s.nextRunAt ? format(new Date(s.nextRunAt), "d MMM", { locale: ru }) : "—"}
               </p>
             </div>
             <div className="flex items-center gap-1">

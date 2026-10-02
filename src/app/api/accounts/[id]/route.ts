@@ -3,13 +3,16 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { requireUserId, UnauthorizedError } from "@/lib/session";
 
-const updateGoalSchema = z.object({
+const updateAccountSchema = z.object({
   name: z.string().min(1).max(60).optional(),
-  targetAmount: z.string().optional(),
+  type: z.enum(["CASH", "CARD", "CRYPTO", "SAVINGS", "INVESTMENT"]).optional(),
   currency: z.enum(["RUB", "USD", "EUR", "BYN", "USDT", "BTC", "ETH", "GBP", "KZT"]).optional(),
-  targetDate: z.string().optional().nullable(),
+  balance: z.string().optional(),
+  colorGradientStart: z.string().optional(),
+  colorGradientEnd: z.string().optional(),
   iconKey: z.string().optional(),
-  status: z.enum(["IN_PROGRESS", "COMPLETED", "ARCHIVED"]).optional(),
+  maskedNumber: z.string().max(20).optional(),
+  monthlyLimit: z.string().optional().nullable(),
 });
 
 export async function PATCH(
@@ -27,26 +30,25 @@ export async function PATCH(
   }
 
   const body = await req.json().catch(() => null);
-  const parsed = updateGoalSchema.safeParse(body);
+  const parsed = updateAccountSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
   }
 
-  const data = parsed.data;
-  const updated = await prisma.goal.updateMany({
+  const existing = await prisma.account.findFirst({
     where: { id: params.id, userId },
-    data: {
-      ...data,
-      targetDate: data.targetDate !== undefined ? (data.targetDate ? new Date(data.targetDate) : null) : undefined,
-    },
   });
 
-  if (updated.count === 0) {
-    return NextResponse.json({ error: "Цель не найдена" }, { status: 404 });
+  if (!existing) {
+    return NextResponse.json({ error: "Счет не найден" }, { status: 404 });
   }
 
-  const goal = await prisma.goal.findUnique({ where: { id: params.id } });
-  return NextResponse.json({ goal: serialize(goal) });
+  const updated = await prisma.account.update({
+    where: { id: params.id },
+    data: parsed.data,
+  });
+
+  return NextResponse.json({ account: serialize(updated) });
 }
 
 export async function DELETE(
@@ -63,9 +65,18 @@ export async function DELETE(
     throw err;
   }
 
-  await prisma.goal.updateMany({
+  const existing = await prisma.account.findFirst({
     where: { id: params.id, userId },
-    data: { status: "ARCHIVED" },
+  });
+
+  if (!existing) {
+    return NextResponse.json({ error: "Счет не найден" }, { status: 404 });
+  }
+
+  // Мягкое удаление (архивация)
+  await prisma.account.update({
+    where: { id: params.id },
+    data: { isArchived: true },
   });
 
   return NextResponse.json({ success: true });
