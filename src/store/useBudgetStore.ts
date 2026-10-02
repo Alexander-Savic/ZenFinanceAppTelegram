@@ -39,7 +39,7 @@ export const useBudgetStore = create<BudgetState>((set, get) => ({
   fetchBudgets: async () => {
     set({ isLoading: true, error: null });
     try {
-      const res = await fetch("/api/budgets");
+      const res = await fetch("/api/budgets", { credentials: "include" });
       if (!res.ok) throw new Error(`Failed to load budgets (${res.status})`);
       const { budgets } = await res.json();
       set({ budgets, isLoading: false });
@@ -47,12 +47,12 @@ export const useBudgetStore = create<BudgetState>((set, get) => ({
       set({ error: (err as Error).message, isLoading: false });
     }
   },
-
   createBudget: async (input) => {
     try {
       const res = await fetch("/api/budgets", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify(input),
       });
       if (!res.ok) throw new Error("Не удалось создать бюджет");

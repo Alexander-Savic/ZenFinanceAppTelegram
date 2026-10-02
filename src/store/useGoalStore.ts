@@ -37,7 +37,7 @@ export const useGoalStore = create<GoalState>((set, get) => ({
   fetchGoals: async () => {
     set({ isLoading: true, error: null });
     try {
-      const res = await fetch("/api/goals");
+      const res = await fetch("/api/goals", { credentials: "include" });
       if (!res.ok) throw new Error(`Failed to load goals (${res.status})`);
       const { goals } = await res.json();
       set({ goals, isLoading: false });
@@ -45,12 +45,12 @@ export const useGoalStore = create<GoalState>((set, get) => ({
       set({ error: (err as Error).message, isLoading: false });
     }
   },
-
   createGoal: async (input) => {
     try {
       const res = await fetch("/api/goals", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify(input),
       });
       if (!res.ok) throw new Error("Не удалось создать цель");
