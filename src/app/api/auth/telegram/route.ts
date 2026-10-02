@@ -1,114 +1,110 @@
-import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
-import crypto from 'crypto';
+// app/api/auth/telegram/route.ts
+import { NextResponse } from "next/server";
+import crypto from "crypto";
+import { cookies } from "next/headers";
+import { prisma } from "@/lib/prisma";
 
-// Валидация initData от Telegram Mini App
-function verifyTelegramWebAppData(telegramInitData: string): { isOk: boolean; user?: any } {
+function verifyTelegramInitData(telegramInitData: string, botToken: string) {
   const urlParams = new URLSearchParams(telegramInitData);
-  const hash = urlParams.get('hash');
-  if (!hash) return { isOk: false };
+  const hash = urlParams.get("hash");
+  urlParams.delete("hash");
 
-  urlParams.delete('hash');
+  const paramsToSign: string[] = [];
+  urlParams.forEach((val, key) => paramsToSign.push(`${key}=${val}`));
+  paramsToSign.sort();
 
-  const params: string[] = [];
-  for (const [key, value] of urlParams.entries()) {
-    params.push(`${key}=${value}`);
-  }
-  params.sort();
-
-  const dataCheckString = params.join('\n');
-  const secretKey = crypto
-    .createHmac('sha256', 'WebAppData')
-    .update(process.env.TELEGRAM_BOT_TOKEN || '')
-    .digest();
-
+  const dataCheckString = paramsToSign.join("\n");
+  const secretKey = crypto.createHmac("sha256", "WebAppData").update(botToken).digest();
   const calculatedHash = crypto
-    .createHmac('sha256', secretKey)
+    .createHmac("sha256", secretKey)
     .update(dataCheckString)
-    .digest('hex');
+    .digest("hex");
 
-  if (calculatedHash !== hash) return { isOk: false };
-
-  // Проверка актуальности данных (не старше 24 часов)
-  const authDate = parseInt(urlParams.get('auth_date') || '0', 10);
-  const currentTime = Math.floor(Date.now() / 1000);
-  if (currentTime - authDate > 86400) {
-    return { isOk: false };
-  }
-
-  const userParam = urlParams.get('user');
-  const user = userParam ? JSON.parse(userParam) : null;
-
-  return { isOk: true, user };
+  return calculatedHash === hash;
 }
 
-export async function POST(request: Request) {
+export async function POST(req: Request) {
   try {
-    const { initData } = await request.json();
+    const { initData } = await req.json();
 
     if (!initData) {
-      return NextResponse.json({ error: 'Missing initData' }, { status: 400 });
+      return NextResponse.json({ error: "Missing initData" }, { status: 400 });
     }
 
-    const { isOk, user: tgUser } = verifyTelegramWebAppData(initData);
-
-    if (!isOk || !tgUser) {
-      return NextResponse.json({ error: 'Invalid Telegram data' }, { status: 401 });
+    const botToken = process.env.TELEGRAM_BOT_TOKEN;
+    if (!botToken) {
+      return NextResponse.json({ error: "Bot token missing" }, { status: 500 });
     }
 
-    const telegramId = BigInt(tgUser.id);
+    const isValid = verifyTelegramInitData(initData, botToken);
+    if (!isValid) {
+      return NextResponse.json({ error: "Invalid Telegram data" }, { status: 401 });
+    }
 
-    // Ищем пользователя по telegramId или создаём нового
+    const urlParams = new URLSearchParams(initData);
+    const userJson = urlParams.get("user");
+    if (!userJson) {
+      return NextResponse.json({ error: "User data missing" }, { status: 400 });
+    }
+
+    const tgUser = JSON.parse(userJson);
+
+    // 1. Создаем или обновляем пользователя
     const user = await prisma.user.upsert({
-      where: { telegramId },
+      where: { telegramId: BigInt(tgUser.id) },
       update: {
-        username: tgUser.username || null,
-        firstName: tgUser.first_name || null,
-        lastName: tgUser.last_name || null,
-        photoUrl: tgUser.photo_url || null,
+        firstName: tgUser.first_name,
+        lastName: tgUser.last_name ?? null,
+        username: tgUser.username ?? null,
       },
       create: {
-        telegramId,
-        username: tgUser.username || null,
-        firstName: tgUser.first_name || null,
-        lastName: tgUser.last_name || null,
-        photoUrl: tgUser.photo_url || null,
+        telegramId: BigInt(tgUser.id),
+        firstName: tgUser.first_name,
+        lastName: tgUser.last_name ?? null,
+        username: tgUser.username ?? null,
       },
     });
 
-    // Создаём долгоживущую сессию (на 30 дней)
-    const sessionToken = crypto.randomBytes(32).toString('hex');
-    const tokenHash = crypto.createHash('sha256').update(sessionToken).digest('hex');
-    const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+    // 2. Генерируем токен сессии и хэши
+    const sessionToken = crypto.randomBytes(32).toString("hex");
+    const tokenHash = crypto.createHash("sha256").update(sessionToken).digest("hex");
+    const initDataHash = crypto.createHash("sha256").update(initData).digest("hex");
 
+    const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 дней
+
+    // 3. Сохраняем сессию со ВСЕМИ обязательными полями
     await prisma.session.create({
       data: {
         userId: user.id,
         tokenHash,
-        initDataHash: crypto.createHash('sha256').update(initData).digest('hex'),
+        initDataHash,
         expiresAt,
       },
     });
 
-    // Конвертируем BigInt в string перед JSON-сериализацией
-    const safeUser = {
-      ...user,
-      telegramId: user.telegramId.toString(),
-    };
-
-    // Отправляем токен в зашифрованной/защищенной httpOnly куке
-    const response = NextResponse.json({ success: true, user: safeUser });
-    response.cookies.set('session_token', sessionToken, {
+    // 4. Устанавливаем cookie zf_session
+    const cookieStore = await cookies();
+    cookieStore.set("zf_session", sessionToken, {
       httpOnly: true,
-      secure: true,
-      sameSite: 'none',
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
       expires: expiresAt,
-      path: '/',
+      path: "/",
     });
 
-    return response;
-  } catch (error) {
-    console.error('Telegram auth error:', error);
-    return NextResponse.json({ error: 'Authentication failed' }, { status: 500 });
+    return NextResponse.json({
+      user: {
+        id: user.id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        username: user.username,
+        themeMode: user.themeMode,
+        accentColor: user.accentColor,
+        baseCurrency: user.baseCurrency,
+      },
+    });
+  } catch (err) {
+    console.error("Auth error:", err);
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
