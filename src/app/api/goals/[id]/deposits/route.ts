@@ -35,7 +35,7 @@ export async function PATCH(
 
   const data = parsed.data;
   const updated = await prisma.goal.updateMany({
-    where: { id, userId }, // Исправлено: id вместо params.id
+    where: { id, userId },
     data: {
       ...data,
       targetDate: data.targetDate !== undefined ? (data.targetDate ? new Date(data.targetDate) : null) : undefined,
@@ -46,7 +46,7 @@ export async function PATCH(
     return NextResponse.json({ error: "Цель не найдена" }, { status: 404 });
   }
 
-  const goal = await prisma.goal.findUnique({ where: { id } }); // Исправлено: id вместо params.id
+  const goal = await prisma.goal.findUnique({ where: { id } });
   return NextResponse.json({ goal: serialize(goal) });
 }
 
@@ -54,7 +54,7 @@ export async function DELETE(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = await params; // Добавлено разворачивание params
+  const { id } = await params;
   let userId: string;
   try {
     userId = await requireUserId();
@@ -65,10 +65,20 @@ export async function DELETE(
     throw err;
   }
 
-  await prisma.goal.updateMany({
-    where: { id, userId }, // Исправлено: id вместо params.id
-    data: { status: "ARCHIVED" },
+  // Проверяем существование цели у текущего пользователя
+  const goal = await prisma.goal.findFirst({
+    where: { id, userId },
   });
+
+  if (!goal) {
+    return NextResponse.json({ error: "Цель не найдена" }, { status: 404 });
+  }
+
+  // Безопасное каскадное удаление депозитов и самой цели через транзакцию
+  await prisma.$transaction([
+    prisma.goalDeposit.deleteMany({ where: { goalId: id } }),
+    prisma.goal.delete({ where: { id } }),
+  ]);
 
   return NextResponse.json({ success: true });
 }

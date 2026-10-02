@@ -12,12 +12,10 @@ export interface GoalDTO {
   roundUpEnabled: boolean;
 }
 
-export interface CreateGoalInput {
-  name: string;
-  targetAmount: string;
-  currency: string;
-  targetDate?: string;
-  iconKey?: string;
+export interface UpdateGoalInput {
+  name?: string;
+  targetAmount?: string;
+  targetDate?: string | null;
 }
 
 interface GoalState {
@@ -25,7 +23,9 @@ interface GoalState {
   isLoading: boolean;
   error: string | null;
   fetchGoals: () => Promise<void>;
-  createGoal: (input: CreateGoalInput) => Promise<boolean>;
+  createGoal: (input: any) => Promise<boolean>;
+  updateGoal: (id: string, input: UpdateGoalInput) => Promise<boolean>;
+  deleteGoal: (id: string) => Promise<boolean>;
   addDeposit: (goalId: string, amount: string, note?: string) => Promise<boolean>;
 }
 
@@ -38,13 +38,14 @@ export const useGoalStore = create<GoalState>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const res = await fetch("/api/goals", { credentials: "include" });
-      if (!res.ok) throw new Error(`Failed to load goals (${res.status})`);
+      if (!res.ok) throw new Error(" Ошибка загрузки целей");
       const { goals } = await res.json();
       set({ goals, isLoading: false });
     } catch (err) {
       set({ error: (err as Error).message, isLoading: false });
     }
   },
+
   createGoal: async (input) => {
     try {
       const res = await fetch("/api/goals", {
@@ -63,11 +64,45 @@ export const useGoalStore = create<GoalState>((set, get) => ({
     }
   },
 
+  updateGoal: async (id, input) => {
+    try {
+      const res = await fetch(`/api/goals/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(input),
+      });
+      if (!res.ok) throw new Error("Не удалось обновить цель");
+      const { goal } = await res.json();
+      set({ goals: get().goals.map((g) => (g.id === id ? goal : g)) });
+      return true;
+    } catch (err) {
+      set({ error: (err as Error).message });
+      return false;
+    }
+  },
+
+  deleteGoal: async (id) => {
+    try {
+      const res = await fetch(`/api/goals/${id}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      if (!res.ok) throw new Error("Не удалось удалить цель");
+      set({ goals: get().goals.filter((g) => g.id !== id) });
+      return true;
+    } catch (err) {
+      set({ error: (err as Error).message });
+      return false;
+    }
+  },
+
   addDeposit: async (goalId, amount, note) => {
     try {
       const res = await fetch(`/api/goals/${goalId}/deposits`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ amount, note }),
       });
       if (!res.ok) throw new Error("Не удалось пополнить цель");
