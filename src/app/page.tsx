@@ -23,7 +23,7 @@ export default function HomePage() {
       fetchAccounts();
       fetchRecent();
     }
-  }, [status, fetchAccounts, fetchRecent]);
+  }, [status]);
 
   return (
     <div className="flex flex-col gap-6 pt-4 pb-28">

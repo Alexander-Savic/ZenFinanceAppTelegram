@@ -18,27 +18,47 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Сообщение не должно быть пустым" }, { status: 400 });
   }
 
-  const accounts = await prisma.account.findMany({ where: { userId, isArchived: false } });
-  const goals = await prisma.goal.findMany({ where: { userId, status: "IN_PROGRESS" } });
-  const recentTransactions = await prisma.transaction.findMany({
-    where: { userId },
-    take: 10,
-    orderBy: { createdAt: "desc" },
-  });
+  try {
+    const accounts = await prisma.account.findMany({ where: { userId, isArchived: false } });
+    const goals = await prisma.goal.findMany({ where: { userId, status: "IN_PROGRESS" } });
+    const recentTransactions = await prisma.transaction.findMany({
+      where: { userId },
+      take: 10,
+      orderBy: { createdAt: "desc" },
+    });
 
-  const contextPrompt = `Ты — финансовый ассистент приложения ZenFinance.
+    // Безопасная сериализация Decimal типов Prisma
+    const cleanAccounts = accounts.map((a) => ({
+      name: a.name,
+      balance: a.balance.toString(),
+      currency: a.currency,
+    }));
+
+    const cleanGoals = goals.map((g) => ({
+      name: g.name,
+      target: g.targetAmount.toString(),
+      current: g.currentAmount.toString(),
+    }));
+
+    const cleanTx = recentTransactions.map((t) => ({
+      type: t.type,
+      amount: t.amount.toString(),
+      category: t.categoryId,
+      date: t.createdAt,
+    }));
+
+    const contextPrompt = `Ты — финансовый ассистент приложения ZenFinance.
 Данные пользователя:
-- Счета: ${JSON.stringify(accounts.map((a) => ({ name: a.name, balance: a.balance, currency: a.currency })))}
-- Накопительные цели: ${JSON.stringify(goals.map((g) => ({ name: g.name, target: g.targetAmount, current: g.currentAmount })))}
-- Последние 10 операций: ${JSON.stringify(recentTransactions.map((t) => ({ type: t.type, amount: t.amount, category: t.categoryId, date: t.createdAt })))}
+- Счета: ${JSON.stringify(cleanAccounts)}
+- Накопительные цели: ${JSON.stringify(cleanGoals)}
+- Последние 10 операций: ${JSON.stringify(cleanTx)}
 
 Отвечай кратко, доброжелательно и по делу на русском языке.`;
 
-  try {
     const apiKey = process.env.DEEPSEEK_API_KEY;
     if (!apiKey) {
       return NextResponse.json({
-        reply: "ИИ-ассистент работает в демо-режиме. Укажите DEEPSEEK_API_KEY в файле .env.",
+        reply: "Укажите DEEPSEEK_API_KEY в файле .env или переменных Vercel.",
       });
     }
 
@@ -57,6 +77,14 @@ export async function POST(req: NextRequest) {
         stream: false,
       }),
     });
+
+    if (!res.ok) {
+      const errorText = await res.text();
+      console.error("DeepSeek API Error:", res.status, errorText);
+      return NextResponse.json({
+        reply: `Ошибка ИИ (${res.status}): Пожалуйста, проверьте баланс аккаунта на platform.deepseek.com`,
+      });
+    }
 
     const data = await res.json();
     const reply = data.choices?.[0]?.message?.content || "Не удалось получить ответ от DeepSeek.";
