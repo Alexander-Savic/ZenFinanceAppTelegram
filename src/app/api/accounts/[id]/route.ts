@@ -17,7 +17,7 @@ const updateAccountSchema = z.object({
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   let userId: string;
   try {
@@ -28,6 +28,8 @@ export async function PATCH(
     }
     throw err;
   }
+
+  const { id } = await params; // Разворачиваем Promise
 
   const body = await req.json().catch(() => null);
   const parsed = updateAccountSchema.safeParse(body);
@@ -36,7 +38,7 @@ export async function PATCH(
   }
 
   const existing = await prisma.account.findFirst({
-    where: { id: params.id, userId },
+    where: { id, userId },
   });
 
   if (!existing) {
@@ -44,7 +46,7 @@ export async function PATCH(
   }
 
   const updated = await prisma.account.update({
-    where: { id: params.id },
+    where: { id },
     data: parsed.data,
   });
 
@@ -53,7 +55,7 @@ export async function PATCH(
 
 export async function DELETE(
   _req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   let userId: string;
   try {
@@ -65,17 +67,18 @@ export async function DELETE(
     throw err;
   }
 
+  const { id } = await params; // Разворачиваем Promise
+
   const existing = await prisma.account.findFirst({
-    where: { id: params.id, userId },
+    where: { id, userId },
   });
 
   if (!existing) {
     return NextResponse.json({ error: "Счет не найден" }, { status: 404 });
   }
 
-  // Мягкое удаление (архивация)
   await prisma.account.update({
-    where: { id: params.id },
+    where: { id },
     data: { isArchived: true },
   });
 
