@@ -15,9 +15,10 @@ export async function POST(req: NextRequest) {
 
   const { message } = await req.json().catch(() => ({}));
   if (!message) {
-    return NextResponse.json({ error: "Message is required" }, { status: 400 });
+    return NextResponse.json({ error: "Сообщение не должно быть пустым" }, { status: 400 });
   }
 
+  // Получаем финансовый контекст пользователя
   const accounts = await prisma.account.findMany({ where: { userId, isArchived: false } });
   const goals = await prisma.goal.findMany({ where: { userId, status: "IN_PROGRESS" } });
   const recentTransactions = await prisma.transaction.findMany({
@@ -26,30 +27,19 @@ export async function POST(req: NextRequest) {
     orderBy: { createdAt: "desc" },
   });
 
-  const contextPrompt = `Ты — персональный ИИ-ассистент по финансовому учету ZenFinance.
+  const contextPrompt = `Ты — финансовый ассистент приложения ZenFinance.
 Данные пользователя:
-- Счета: ${JSON.stringify(
-    accounts.map((a) => ({ name: a.name, balance: a.balance, currency: a.currency }))
-  )}
-- Накопительные цели: ${JSON.stringify(
-    goals.map((g) => ({ name: g.name, target: g.targetAmount, current: g.currentAmount }))
-  )}
-- Последние 10 операций: ${JSON.stringify(
-    recentTransactions.map((t) => ({
-      type: t.type,
-      amount: t.amount,
-      category: t.categoryId,
-      date: t.createdAt,
-    }))
-  )}
+- Счета: ${JSON.stringify(accounts.map((a) => ({ name: a.name, balance: a.balance, currency: a.currency })))}
+- Накопительные цели: ${JSON.stringify(goals.map((g) => ({ name: g.name, target: g.targetAmount, current: g.currentAmount })))}
+- Последние 10 операций: ${JSON.stringify(recentTransactions.map((t) => ({ type: t.type, amount: t.amount, category: t.categoryId, date: t.createdAt })))}
 
-Отвечай вежливо, лаконично и структурировано. Давай полезные финансовые советы на основе имеющихся данных.`;
+Отвечай кратко, доброжелательно и по делу на русском языке.`;
 
   try {
     const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) {
       return NextResponse.json({
-        reply: "ИИ-ассистент работает в демо-режиме. Для подключения добавьте OPENAI_API_KEY в файл .env.",
+        reply: "ИИ-ассистент работает в демо-режиме. Для подключения добавьте OPENAI_API_KEY в переменные окружения (.env).",
       });
     }
 
@@ -73,7 +63,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ reply });
   } catch (err) {
-    console.error("AI Assistant error:", err);
-    return NextResponse.json({ error: "Ошибка ИИ-сервиса" }, { status: 500 });
+    console.error("AI Assistant Error:", err);
+    return NextResponse.json({ error: "Ошибка сервиса ИИ" }, { status: 500 });
   }
 }

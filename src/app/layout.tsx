@@ -4,6 +4,7 @@ import "./globals.css";
 import { Providers } from "./providers";
 import { AppGate } from "@/components/AppGate";
 import { BottomNav } from "@/components/BottomNav";
+import { AiAssistant } from "@/components/AiAssistant";
 
 export const metadata: Metadata = {
   title: "ZenFinance",
@@ -28,6 +29,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body>
+        <AiAssistant />
         <Providers>
           <AppGate>
             {children}
