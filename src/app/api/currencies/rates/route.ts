@@ -17,7 +17,7 @@ export async function GET() {
     const cryptoData = await cryptoRes.json();
 
     const rates: Record<string, number> = {
-      BYN: 1.0, // База
+      BYN: 1.0,
     };
 
     if (Array.isArray(nbrbData)) {
@@ -44,8 +44,8 @@ export async function GET() {
       BYN: 1.0,
       USD: 3.25,
       EUR: 3.55,
-      RUB: 0.035, 
-      BTC: 210000, 
+      RUB: 0.035,
+      BTC: 210000,
       ETH: 8500,
     };
 
