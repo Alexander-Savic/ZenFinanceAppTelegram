@@ -15,7 +15,7 @@ export interface CreateAccountInput {
   name: string;
   type: AccountDTO["type"];
   balance?: string;
-  initialBalance?: string; // Добавляем поле, которое отправляет форма
+  initialBalance?: string;
   currency: string;
   monthlyLimit?: string;
   colorGradientStart?: string;
@@ -39,18 +39,22 @@ export const useAccountStore = create<AccountState>((set, get) => ({
   fetchAccounts: async () => {
     set({ isLoading: true, error: null });
     try {
-      const res = await fetch("/api/accounts", { credentials: "include" });
-      if (!res.ok) throw new Error("Не удалось загрузить счета");
-      const { accounts } = await res.json();
-      set({ accounts, isLoading: false });
+      const res = await fetch("/api/accounts", { cache: "no-store" });
+      if (res.ok) {
+        const data = await res.json();
+        const accountsList = Array.isArray(data) ? data : data.accounts || [];
+        set({ accounts: accountsList, isLoading: false });
+      } else {
+        set({ isLoading: false });
+      }
     } catch (err) {
+      console.error("Fetch accounts error:", err);
       set({ error: (err as Error).message, isLoading: false });
     }
   },
 
   createAccount: async (data: CreateAccountInput) => {
     try {
-      // Нормализуем баланс для API
       const payload = {
         ...data,
         balance: data.initialBalance ?? data.balance ?? "0",
@@ -66,7 +70,11 @@ export const useAccountStore = create<AccountState>((set, get) => ({
       if (!res.ok) throw new Error("Не удалось создать счёт");
 
       const newAccount = await res.json();
+
       set({ accounts: [...get().accounts, newAccount] });
+
+      get().fetchAccounts();
+
       return true;
     } catch (err) {
       console.error("Create account error:", err);
