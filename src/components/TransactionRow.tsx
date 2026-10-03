@@ -36,30 +36,32 @@ export function TransactionRow({ tx }: { tx: TransactionDTO }) {
   };
 
   return (
-    <div className="group flex items-center gap-3 rounded-2xl bg-surface p-3 transition hover:bg-surface/80">
+    <div className="flex items-center gap-3 rounded-2xl bg-surface p-3 transition hover:bg-surface/80">
       <div className={cn("flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-bg", iconColor)}>
         <Icon className="h-4 w-4" />
       </div>
+      
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-medium text-primary">
           {tx.description || (isTransfer ? "Перевод" : isIncome ? "Доход" : "Расход")}
         </p>
         <p className="truncate text-xs text-secondary">
           {new Date(tx.occurredAt).toLocaleDateString("ru-RU", { day: "numeric", month: "short" })}
-          {tx.tags.length > 0 && ` · ${tx.tags.map((t) => `#${t.tag.name}`).join(" ")}`}
+          {tx.tags && tx.tags.length > 0 && ` · ${tx.tags.map((t) => `#${t.tag.name}`).join(" ")}`}
         </p>
       </div>
 
-      <div className="flex items-center gap-2">
-        <span className={cn("shrink-0 text-sm font-semibold", amountColor)}>
+      <div className="flex shrink-0 items-center gap-2">
+        <span className={cn("text-sm font-semibold", amountColor)}>
           {sign}
           {formatMoney(tx.amount, tx.currency)}
         </span>
 
+        {/* Кнопка удаления видна всегда (без opacity-0) */}
         <button
           onClick={handleDelete}
           disabled={isDeleting}
-          className="rounded-lg p-1.5 text-secondary opacity-0 transition hover:bg-danger/10 hover:text-danger focus:opacity-100 group-hover:opacity-100 disabled:opacity-50"
+          className="p-1.5 text-secondary hover:text-danger active:scale-95 disabled:opacity-50"
           title="Удалить операцию"
         >
           <Trash2 className="h-4 w-4" />
