@@ -37,18 +37,34 @@ export type CreateTransactionInput =
 
 interface TransactionState {
   recent: TransactionDTO[];
+  transactions: TransactionDTO[];
   isLoading: boolean;
   isSubmitting: boolean;
   error: string | null;
   fetchRecent: () => Promise<void>;
+  fetchTransactions: () => Promise<void>;
   createTransaction: (input: CreateTransactionInput) => Promise<{ ok: true } | { ok: false; error: string }>;
+  deleteTransaction: (id: string) => Promise<boolean>;
 }
 
 export const useTransactionStore = create<TransactionState>((set, get) => ({
   recent: [],
+  transactions: [],
   isLoading: false,
   isSubmitting: false,
   error: null,
+
+  fetchTransactions: async () => {
+    try {
+      const res = await fetch("/api/transactions");
+      if (res.ok) {
+        const data = await res.json();
+        set({ transactions: data });
+      }
+    } catch (err) {
+      console.error("Error fetching transactions:", err);
+    }
+  },
 
   fetchRecent: async () => {
     set({ isLoading: true, error: null });
@@ -59,6 +75,30 @@ export const useTransactionStore = create<TransactionState>((set, get) => ({
       set({ recent: transactions, isLoading: false });
     } catch (err) {
       set({ error: (err as Error).message, isLoading: false });
+    }
+  },
+
+  deleteTransaction: async (id: string) => {
+    try {
+      const res = await fetch(`/api/transactions/${id}`, {
+        method: "DELETE",
+      });
+
+      if (res.ok) {
+        // Удаляем транзакцию одновременно из массива recent (Главная) и transactions (Полный список)
+        set((state) => ({
+          recent: state.recent.filter((t) => t.id !== id),
+          transactions: state.transactions.filter((t) => t.id !== id),
+        }));
+
+        // Обновляем балансы счетов
+        useAccountStore.getState().fetchAccounts();
+        return true;
+      }
+      return false;
+    } catch (err) {
+      console.error("Error deleting transaction:", err);
+      return false;
     }
   },
 
@@ -86,9 +126,6 @@ export const useTransactionStore = create<TransactionState>((set, get) => ({
         recent: [body.transaction, ...s.recent].slice(0, 10),
       }));
 
-      // Balances changed server-side; re-fetch rather than reconcile Decimal
-      // math on the client (see the Phase-0 note on why balance math stays
-      // server-authoritative).
       useAccountStore.getState().fetchAccounts();
 
       return { ok: true };
