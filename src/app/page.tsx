@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { Plus, FileSpreadsheet, Loader2 } from "lucide-react";
+import { Plus, FileSpreadsheet, Loader2, Wallet } from "lucide-react";
 import { useUserStore } from "@/store/useUserStore";
 import { useAccountStore } from "@/store/useAccountStore";
 import { useTransactionStore } from "@/store/useTransactionStore";
+import { useCurrencyStore } from "@/store/useCurrencyStore";
 import { AccountsRow } from "@/components/AccountsRow";
 import { TransactionRow } from "@/components/TransactionRow";
 import { AddTransactionSheet } from "@/components/AddTransactionSheet";
@@ -13,8 +14,9 @@ export default function HomePage() {
   const user = useUserStore((s) => s.user);
   const status = useUserStore((s) => s.status);
 
-  const fetchAccounts = useAccountStore((s) => s.fetchAccounts);
+  const { accounts, fetchAccounts } = useAccountStore();
   const { recent, isLoading, fetchRecent } = useTransactionStore();
+  const { fetchRates, convert, baseCurrency } = useCurrencyStore();
 
   const [sheetOpen, setSheetOpen] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
@@ -24,8 +26,14 @@ export default function HomePage() {
     if (status === "authenticated") {
       fetchAccounts();
       fetchRecent();
+      fetchRates(); 
     }
-  }, [status]);
+  }, [status, fetchAccounts, fetchRecent, fetchRates]);
+
+  // Подсчет общего баланса со всех счетов с учетом курсов
+  const totalBalance = accounts.reduce((sum, acc) => {
+    return sum + convert(acc.balance, acc.currency, baseCurrency);
+  }, 0);
 
   async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -49,7 +57,6 @@ export default function HomePage() {
       }
 
       alert(`Импорт завершен! Успешно добавлено операций: ${data.count}`);
-      // Обновляем список счетов и транзакций
       fetchAccounts();
       fetchRecent();
     } catch (err) {
@@ -75,9 +82,27 @@ export default function HomePage() {
       <header className="px-4">
         <p className="text-sm text-secondary">С возвращением,</p>
         <h1 className="text-2xl font-semibold text-primary">
-          {user?.firstName ?? "Друг"} 
+          {user?.firstName ?? "Друг"}
         </h1>
       </header>
+
+      {/* Виджет общего баланса с автоконвертацией */}
+      <section className="px-4">
+        <div className="flex items-center justify-between rounded-2xl bg-surface p-4 shadow-sm">
+          <div className="flex flex-col gap-1">
+            <p className="text-xs font-medium text-secondary">Общий баланс</p>
+            <h2 className="text-2xl font-bold text-primary">
+              {totalBalance.toLocaleString("ru-RU", {
+                maximumFractionDigits: 2,
+              })}{" "}
+              <span className="text-lg text-accent">{baseCurrency}</span>
+            </h2>
+          </div>
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent/10 text-accent">
+            <Wallet className="h-5 w-5" />
+          </div>
+        </div>
+      </section>
 
       <section className="flex flex-col gap-3">
         <div className="flex items-center justify-between px-4">
@@ -88,7 +113,9 @@ export default function HomePage() {
 
       <section className="flex flex-col gap-3 px-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-sm font-medium text-secondary">Последние операции</h2>
+          <h2 className="text-sm font-medium text-secondary">
+            Последние операции
+          </h2>
           <button
             onClick={() => fileInputRef.current?.click()}
             disabled={isImporting}
@@ -107,7 +134,10 @@ export default function HomePage() {
         {isLoading && recent.length === 0 && (
           <div className="flex flex-col gap-2">
             {[0, 1, 2].map((i) => (
-              <div key={i} className="h-16 animate-pulse rounded-2xl bg-surface" />
+              <div
+                key={i}
+                className="h-16 animate-pulse rounded-2xl bg-surface"
+              />
             ))}
           </div>
         )}
@@ -133,7 +163,10 @@ export default function HomePage() {
         <Plus className="h-6 w-6" />
       </button>
 
-      <AddTransactionSheet open={sheetOpen} onClose={() => setSheetOpen(false)} />
+      <AddTransactionSheet
+        open={sheetOpen}
+        onClose={() => setSheetOpen(false)}
+      />
     </div>
   );
 }
