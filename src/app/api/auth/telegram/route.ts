@@ -49,7 +49,6 @@ export async function POST(req: Request) {
 
     const tgUser = JSON.parse(userJson);
 
-    // 1. Создаем или обновляем пользователя
     const user = await prisma.user.upsert({
       where: { telegramId: BigInt(tgUser.id) },
       update: {
@@ -65,14 +64,12 @@ export async function POST(req: Request) {
       },
     });
 
-    // 2. Генерируем токен сессии и хэши
     const sessionToken = crypto.randomBytes(32).toString("hex");
     const tokenHash = crypto.createHash("sha256").update(sessionToken).digest("hex");
     const initDataHash = crypto.createHash("sha256").update(initData).digest("hex");
 
     const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 дней
 
-    // 3. Сохраняем сессию со ВСЕМИ обязательными полями
     await prisma.session.create({
       data: {
         userId: user.id,
@@ -82,7 +79,6 @@ export async function POST(req: Request) {
       },
     });
 
-    // 4. Устанавливаем cookie zf_session
     const cookieStore = await cookies();
     cookieStore.set("zf_session", sessionToken, {
       httpOnly: true,

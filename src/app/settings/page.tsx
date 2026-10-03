@@ -23,17 +23,14 @@ export default function SettingsPage() {
   const user = useUserStore((s) => s.user);
   const updatePreferences = useUserStore((s) => s.updatePreferences);
 
-  // Синхронизация с DOM (применение темы и цвета к <html>)
   useEffect(() => {
     const root = document.documentElement;
 
-    // 1. Применяем тему (Dark / Light / Auto)
     if (user?.themeMode === "DARK") {
       root.classList.add("dark");
     } else if (user?.themeMode === "LIGHT") {
       root.classList.remove("dark");
     } else if (user?.themeMode === "AUTO") {
-      // Берём тему из Telegram WebApp, если доступно, иначе из системных настроек
       const isTelegramDark = window.Telegram?.WebApp?.colorScheme === "dark";
       const isSystemDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
       
@@ -44,7 +41,6 @@ export default function SettingsPage() {
       }
     }
 
-    // 2. Применяем акцентный цвет (приводим к нижнему регистру для globals.css)
     if (user?.accentColor) {
       root.setAttribute("data-accent", user.accentColor.toLowerCase());
     }

@@ -33,7 +33,6 @@ export function ImportButton() {
       }
 
       alert(`Успешно импортировано операций: ${data.count}`);
-      // Обновляем счета и список операций
       fetchAccounts();
       fetchRecent();
     } catch (err) {

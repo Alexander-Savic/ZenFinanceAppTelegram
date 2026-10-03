@@ -45,7 +45,6 @@ export function AddTransactionSheet({ open, onClose }: { open: boolean; onClose:
     fetchTags();
   }, [open, fetchAccounts, fetchCategories, fetchTags]);
 
-  // Reset to a clean form each time the sheet is opened.
   useEffect(() => {
     if (!open) return;
     setType("EXPENSE");
@@ -155,7 +154,6 @@ export function AddTransactionSheet({ open, onClose }: { open: boolean; onClose:
     }
   }
 
-  // Native MainButton mirrors the in-sheet submit button; wired only while open.
   useEffect(() => {
     if (!open) {
       mainButton.hide();
@@ -165,14 +163,12 @@ export function AddTransactionSheet({ open, onClose }: { open: boolean; onClose:
     mainButton.show(label, handleSubmit);
     mainButton.setLoading(isSubmitting);
     return () => mainButton.hide();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, amount, fromAccount?.currency, isSubmitting, type, accountId, fromAccountId, toAccountId, categoryId, selectedTagIds, description, exchangeRateOverride]);
 
   useEffect(() => {
     if (!open) return;
     backButton.show(onClose);
     return () => backButton.hide();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
   return (

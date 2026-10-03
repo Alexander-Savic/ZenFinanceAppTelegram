@@ -16,12 +16,10 @@ export type Period = "week" | "month" | "year";
 export interface PeriodRange {
   start: Date;
   end: Date;
-  /** Granularity to bucket cash-flow points at, chosen so a chart never
-   *  renders more than ~12 points regardless of the period. */
   bucket: "day" | "week" | "month";
 }
 
-const WEEK_OPTS = { weekStartsOn: 1 as const }; // ISO week (Monday) — matches RU locale conventions
+const WEEK_OPTS = { weekStartsOn: 1 as const }; 
 
 export function resolvePeriodRange(period: Period, anchor: Date = new Date()): PeriodRange {
   switch (period) {
@@ -38,8 +36,6 @@ export function resolvePeriodRange(period: Period, anchor: Date = new Date()): P
   }
 }
 
-/** Generates the full ordered list of bucket boundaries so the chart always
- *  shows zero-value points instead of gaps where no transactions occurred. */
 export function bucketBoundaries(range: PeriodRange): { key: string; label: string; start: Date }[] {
   if (range.bucket === "day") {
     return eachDayOfInterval({ start: range.start, end: range.end }).map((d) => ({

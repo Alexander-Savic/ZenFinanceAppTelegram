@@ -1,11 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import type { Prisma } from "@prisma/client";
 
-/**
- * Seeded once at account creation (see api/auth/telegram). Users can rename,
- * recolor, or delete these afterward — `isSystem` just marks provenance, it
- * doesn't lock the row.
- */
 const DEFAULT_EXPENSE_CATEGORIES: Array<{ name: string; iconKey: string; colorHex: string }> = [
   { name: "Еда и рестораны", iconKey: "utensils", colorHex: "#f59e0b" },
   { name: "Продукты", iconKey: "shopping-cart", colorHex: "#22c55e" },

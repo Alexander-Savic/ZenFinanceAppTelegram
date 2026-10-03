@@ -23,8 +23,6 @@ export async function GET(req: NextRequest) {
 
   const { start, end } = resolvePeriodRange(period);
 
-  // Grouped in SQL rather than pulled row-by-row: this scales to years of
-  // transaction history without shipping raw rows to the server process.
   const grouped = await prisma.transaction.groupBy({
     by: ["categoryId"],
     where: {

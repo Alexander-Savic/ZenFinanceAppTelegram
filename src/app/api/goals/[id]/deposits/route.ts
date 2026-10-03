@@ -26,7 +26,6 @@ export async function POST(
       return NextResponse.json({ error: "Укажите корректную сумму пополнения" }, { status: 400 });
     }
 
-    // Проверяем, принадлежит ли цель пользователю
     const goal = await prisma.goal.findFirst({
       where: { id: goalId, userId },
     });
@@ -37,7 +36,6 @@ export async function POST(
 
     const depositAmount = Number(amount);
 
-    // Создаем депозит и обновляем текущую сумму в копилке
     const [deposit] = await prisma.$transaction([
       prisma.goalDeposit.create({
         data: {

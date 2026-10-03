@@ -28,8 +28,6 @@ export async function requireUserId(): Promise<string> {
     }
   }
 
-  // Dev-режим: если кука не передалась или сессия истекла при локальной разработке,
-  // подтягиваем ID тестового Dev-пользователя из базы Neon
   if (process.env.NODE_ENV === "development") {
     const devUser = await prisma.user.findFirst({
       where: { telegramId: 123456789 },

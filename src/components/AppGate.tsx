@@ -15,27 +15,22 @@ export function AppGate({ children }: { children: ReactNode }) {
 
   const [grace, setGrace] = useState(true);
 
-  // 1. Таймер grace-периода для определения Telegram
   useEffect(() => {
     const t = setTimeout(() => setGrace(false), NOT_IN_TELEGRAM_GRACE_MS);
     return () => clearTimeout(t);
   }, []);
 
-  // 2. Автоматический запуск авторизации при готовности SDK
   useEffect(() => {
     if (!isReady) return;
 
     if (initData) {
-      // Если запустили внутри Telegram — аутентифицируем по initData
       authenticate(initData);
     } else if (process.env.NODE_ENV === "development") {
-      // Если открыли в обычном браузере во время разработки — используем тестовый токен/данные
       console.warn("⚠️ Запуск вне Telegram: вход в тестовом режиме");
       authenticate("dev_mock_init_data");
     }
   }, [isReady, initData, authenticate]);
 
-  // Экран: запуск вне Telegram (в продакшене)
   if (!isReady && !grace) {
     return (
       <CenteredState
@@ -46,7 +41,6 @@ export function AppGate({ children }: { children: ReactNode }) {
     );
   }
 
-  // Экран: ошибка аутентификации
   if (status === "error") {
     return (
       <CenteredState
@@ -65,7 +59,6 @@ export function AppGate({ children }: { children: ReactNode }) {
     );
   }
 
-  // Экран: спиннер загрузки во время выполнения authenticate()
   if (status !== "authenticated") {
     return (
       <div className="flex h-dvh items-center justify-center bg-bg">

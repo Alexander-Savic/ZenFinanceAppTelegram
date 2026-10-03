@@ -26,7 +26,6 @@ export const QuickTemplates: React.FC = () => {
   }, []);
 
   const handleApplyTemplate = async (template: Template) => {
-    // Вызов виброотклика Telegram WebApp
     if (typeof window !== 'undefined' && window.Telegram?.WebApp?.HapticFeedback) {
       window.Telegram.WebApp.HapticFeedback.impactOccurred('medium');
     }

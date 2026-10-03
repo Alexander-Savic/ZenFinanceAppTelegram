@@ -17,16 +17,8 @@ import type {
 } from "@/types/telegram";
 
 interface TelegramContextValue {
-  /** True once window.Telegram.WebApp exists and ready()/expand() have run. */
   isReady: boolean;
-  /** Raw signed string — the ONLY thing ever sent to the server for auth. */
   initData: string | null;
-  /**
-   * Client-visible user snapshot from initDataUnsafe. Use ONLY for optimistic
-   * UI (e.g. showing a name before the auth round-trip resolves). Never treat
-   * this as authenticated identity — the server re-derives identity from the
-   * validated initData, not from this object.
-   */
   unsafeUser: TelegramUnsafeUser | null;
   colorScheme: "light" | "dark";
   themeParams: TelegramThemeParams;
@@ -65,8 +57,6 @@ export function TelegramProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const webApp = getWebApp();
     if (!webApp) {
-      // Not running inside Telegram (e.g. local dev in a plain browser).
-      // Leave isReady=false so callers can render a "open in Telegram" state.
       return;
     }
 
@@ -109,9 +99,6 @@ export function TelegramProvider({ children }: { children: ReactNode }) {
       show: (text: string, onClick: () => void) => {
         const webApp = getWebApp();
         if (!webApp) return;
-        // Telegram's onClick is additive (no implicit replace), so every call
-        // here must explicitly unregister the previous handler first or the
-        // WebApp keeps invoking stale closures alongside the new one.
         if (lastMainButtonHandler.current) {
           webApp.MainButton.offClick(lastMainButtonHandler.current);
         }
@@ -185,7 +172,6 @@ export function TelegramProvider({ children }: { children: ReactNode }) {
 export function useTelegram(): TelegramContextValue {
   const ctx = useContext(TelegramContext);
   
-  // Возвращаем фоллбек-объект, если компонент рендерится вне провайдера на сервере/при сборке
   if (!ctx) {
     return {
       isReady: false,

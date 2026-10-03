@@ -22,7 +22,6 @@ export function advance(date: Date, interval: Interval): Date {
   }
 }
 
-/** Все срабатывания подписки от nextRunAt до horizon (включительно). */
 export function occurrencesUntil(nextRunAt: string, interval: Interval, horizon: Date): Date[] {
   const result: Date[] = [];
   let cursor = new Date(nextRunAt);

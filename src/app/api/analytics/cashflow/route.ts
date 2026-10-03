@@ -31,16 +31,12 @@ export async function GET(req: NextRequest) {
     select: { type: true, amount: true, occurredAt: true },
   });
 
-  // Bucketed here in application code: at this data volume (one period's
-  // worth of transactions, max ~a few hundred rows) it's simpler and just as
-  // fast as a date_trunc query. Revisit with $queryRaw if per-user history
-  // grows into the tens of thousands of rows within a single period.
   const buckets = new Map(boundaries.map((b) => [b.key, { income: 0, expense: 0 }]));
 
   for (const t of transactions) {
     const key = bucketKeyFor(t.occurredAt, range.bucket);
     const bucket = buckets.get(key);
-    if (!bucket) continue; // shouldn't happen given the range filter, but stay defensive
+    if (!bucket) continue; 
     if (t.type === "INCOME") bucket.income += Number(t.amount);
     else bucket.expense += Number(t.amount);
   }

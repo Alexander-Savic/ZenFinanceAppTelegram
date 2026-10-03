@@ -1,14 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireUserId, UnauthorizedError } from "@/lib/session";
 
-/**
- * Rates relative to USD. This is a static snapshot so the transfer form has
- * something real to pre-fill and convert with today; Phase 6 replaces this
- * with a live fetch (CBR for RUB, Binance for crypto) behind a short server
- * cache, without changing this route's response shape — the client already
- * treats the rate as editable, since bank-specific rates legitimately differ
- * from whatever this endpoint returns.
- */
 const USD_RATES: Record<string, number> = {
   USD: 1,
   EUR: 0.92,
@@ -35,6 +27,6 @@ export async function GET() {
     base: "USD",
     rates: USD_RATES,
     asOf: new Date().toISOString(),
-    isLive: false, // flips to true once Phase 6 wires a real provider
+    isLive: false, 
   });
 }

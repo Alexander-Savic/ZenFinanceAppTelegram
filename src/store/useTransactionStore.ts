@@ -85,13 +85,11 @@ export const useTransactionStore = create<TransactionState>((set, get) => ({
       });
 
       if (res.ok) {
-        // Удаляем транзакцию одновременно из массива recent (Главная) и transactions (Полный список)
         set((state) => ({
           recent: state.recent.filter((t) => t.id !== id),
           transactions: state.transactions.filter((t) => t.id !== id),
         }));
 
-        // Обновляем балансы счетов
         useAccountStore.getState().fetchAccounts();
         return true;
       }

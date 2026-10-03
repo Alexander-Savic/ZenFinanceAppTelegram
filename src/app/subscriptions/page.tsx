@@ -23,7 +23,6 @@ export default function SubscriptionsPage() {
     fetchSubscriptions();
   }, [fetchSubscriptions]);
 
-  // Календарь: все срабатывания активных подписок на ближайшие 30 дней.
   const upcoming = useMemo(() => {
     const horizon = addDays(new Date(), 30);
     return (subscriptions || [])

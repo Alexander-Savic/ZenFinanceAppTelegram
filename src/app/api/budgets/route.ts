@@ -25,14 +25,11 @@ export async function GET() {
 
   const now = new Date();
   const budgets = await prisma.budget.findMany({
-    where: { userId, periodEnd: { gte: now } }, // only current/upcoming budgets
+    where: { userId, periodEnd: { gte: now } }, 
     include: { category: { select: { id: true, name: true, iconKey: true, colorHex: true } } },
     orderBy: { periodStart: "asc" },
   });
 
-  // Spend-so-far is computed live from Transaction rather than stored on the
-  // Budget row, so it's always correct even if a transaction is edited or
-  // deleted after the budget was created.
   const withSpend = await Promise.all(
     budgets.map(async (budget) => {
       const spentAgg = await prisma.transaction.aggregate({

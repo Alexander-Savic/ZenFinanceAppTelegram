@@ -57,7 +57,6 @@ export function TransactionRow({ tx }: { tx: TransactionDTO }) {
           {formatMoney(tx.amount, tx.currency)}
         </span>
 
-        {/* Кнопка удаления видна всегда (без opacity-0) */}
         <button
           onClick={handleDelete}
           disabled={isDeleting}

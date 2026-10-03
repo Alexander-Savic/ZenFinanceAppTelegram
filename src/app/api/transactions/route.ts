@@ -25,7 +25,7 @@ const transferSchema = baseSchema.extend({
   type: z.literal("TRANSFER"),
   fromAccountId: z.string(),
   toAccountId: z.string(),
-  exchangeRate: z.string().optional(), // required if currencies differ; validated below
+  exchangeRate: z.string().optional(), 
 });
 
 const createTransactionSchema = z.discriminatedUnion("type", [
@@ -98,7 +98,6 @@ export async function POST(req: NextRequest) {
           );
         }
 
-        // Lock-equivalent: fetch both accounts scoped to this user, verify ownership.
         const [fromAccount, toAccount] = await Promise.all([
           tx.account.findFirstOrThrow({
             where: { id: input.fromAccountId, userId },
@@ -113,7 +112,6 @@ export async function POST(req: NextRequest) {
           throw new InsufficientFundsError(fromAccount.id);
         }
 
-        // Determine credited amount on the destination side.
         let creditedAmount = amount;
         let exchangeRate: Decimal | null = null;
         if (fromAccount.currency !== toAccount.currency) {
@@ -156,7 +154,6 @@ export async function POST(req: NextRequest) {
         });
       }
 
-      // INCOME / EXPENSE
       const account = await tx.account.findFirstOrThrow({
         where: { id: input.accountId, userId },
       });
@@ -224,7 +221,6 @@ class InsufficientFundsError extends Error {
 }
 class MissingExchangeRateError extends Error {}
 
-// Decimal fields serialize to strings for safe JSON transport (no float precision loss).
 function serializeTransaction(t: Record<string, unknown>) {
   return JSON.parse(
     JSON.stringify(t, (_key, value) =>

@@ -3,7 +3,6 @@
 import { useEffect, type ReactNode } from "react";
 import { TelegramProvider, useTelegram } from "@/lib/telegram-context";
 import { useUserStore } from "@/store/useUserStore";
-import { ThemeSync } from "@/components/ThemeSync";
 import { AuthProvider } from "@/components/AuthProvider";
 
 function AuthBootstrapper({ children }: { children: ReactNode }) {

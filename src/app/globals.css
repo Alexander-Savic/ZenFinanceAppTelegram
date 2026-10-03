@@ -1,11 +1,5 @@
 @import "tailwindcss";
 
-/*
- * Design tokens are plain CSS custom properties, re-exposed to Tailwind via
- * @theme so `bg-surface`, `text-primary`, `bg-accent`, etc. work as utilities.
- * Light/Dark and the six accent colors are runtime toggles (a class + a data
- * attribute on <html>), not separate Tailwind builds — see ThemeSync.
- */
 
 @theme inline {
   --color-bg: var(--zf-bg);
@@ -24,7 +18,6 @@
   --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
-/* ---- Light mode (default) ---- */
 :root {
   --zf-bg: #f5f6f8;
   --zf-surface: #ffffff;
@@ -37,7 +30,6 @@
   --zf-warning: #f59e0b;
 }
 
-/* ---- Dark mode ---- */
 .dark {
   --zf-bg: #0d0e11;
   --zf-surface: #17191d;
@@ -50,7 +42,6 @@
   --zf-warning: #fbbf24;
 }
 
-/* ---- Accent colors (independent of light/dark) ---- */
 :root,
 [data-accent="indigo"] {
   --zf-accent: #6366f1;
@@ -88,10 +79,9 @@ body {
   height: 100%;
   background: var(--zf-bg);
   color: var(--zf-text-primary);
-  overscroll-behavior-y: none; /* stop Telegram's WebView rubber-banding the whole app */
+  overscroll-behavior-y: none; 
 }
 
-/* Telegram Mini Apps report safe-area insets via these env() vars on supported clients. */
 .safe-area-bottom {
   padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
 }

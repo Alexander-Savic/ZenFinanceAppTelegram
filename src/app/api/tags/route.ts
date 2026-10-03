@@ -23,9 +23,6 @@ export async function GET() {
   return NextResponse.json({ tags });
 }
 
-// Get-or-create: the tag picker lets users type a brand-new tag inline
-// without a separate "manage tags" screen, so creation must be idempotent
-// on (userId, name) — the schema's @@unique enforces this at the DB level.
 export async function POST(req: NextRequest) {
   let userId: string;
   try {

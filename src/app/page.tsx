@@ -30,7 +30,6 @@ export default function HomePage() {
     }
   }, [status, fetchAccounts, fetchRecent, fetchRates]);
 
-  // Подсчет общего баланса со всех счетов с учетом курсов
   const totalBalance = accounts.reduce((sum, acc) => {
     return sum + convert(acc.balance, acc.currency, baseCurrency);
   }, 0);

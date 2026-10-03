@@ -19,7 +19,6 @@ export function useExchangeRates() {
       .finally(() => setIsLoading(false));
   }, []);
 
-  /** Units of `to` per 1 unit of `from`. Returns null until rates load or if a currency is unknown. */
   const getRate = useCallback(
     (from: string, to: string): number | null => {
       if (!data) return null;
@@ -27,8 +26,6 @@ export function useExchangeRates() {
       const fromRate = data.rates[from];
       const toRate = data.rates[to];
       if (!fromRate || !toRate) return null;
-      // Both rates are USD-per-unit-of-currency's inverse (USD_RATES[X] = X per 1 USD),
-      // so units of `to` per unit of `from` = toRate / fromRate.
       return toRate / fromRate;
     },
     [data]

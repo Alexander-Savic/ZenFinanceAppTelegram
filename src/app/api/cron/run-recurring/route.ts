@@ -4,11 +4,6 @@ import Decimal from "decimal.js";
 import { addDays, addWeeks, addMonths, addQuarters, addYears } from "date-fns";
 import { TransactionType } from "@prisma/client";
 
-/**
- * Vercel Cron target. Configure in vercel.json, e.g.:
- *   { "crons": [{ "path": "/api/cron/run-recurring", "schedule": "0 * * * *" }] }
- * Runs hourly; each subscription only fires once its nextRunAt has passed.
- */
 function advance(date: Date, interval: string): Date {
   switch (interval) {
     case "DAILY": return addDays(date, 1);

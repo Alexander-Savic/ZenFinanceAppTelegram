@@ -20,7 +20,6 @@ interface UserState {
   status: AuthStatus;
   user: AuthenticatedUser | null;
   error: string | null;
-  /** Runs the Telegram initData -> session handshake. Safe to call once per app load. */
   authenticate: (initData: string) => Promise<void>;
   updatePreferences: (patch: Partial<Pick<AuthenticatedUser, "themeMode" | "accentColor">>) => void;
 }
@@ -39,7 +38,7 @@ export const useUserStore = create<UserState>((set, get) => ({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ initData }),
-        credentials: "include", // ensure the httpOnly session cookie is stored
+        credentials: "include", 
       });
 
       if (!res.ok) {
@@ -57,8 +56,6 @@ export const useUserStore = create<UserState>((set, get) => ({
   updatePreferences: (patch) => {
     const current = get().user;
     if (!current) return;
-    // Optimistic local update; a Settings-screen PATCH endpoint (Phase-later)
-    // persists this server-side. Reverting on failure is handled there.
     set({ user: { ...current, ...patch } });
   },
 }));

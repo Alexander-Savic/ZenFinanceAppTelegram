@@ -1,20 +1,7 @@
 import { createHmac } from "crypto";
 import { z } from "zod";
 
-/**
- * Validates Telegram WebApp `initData` per the official spec:
- * https://core.telegram.org/bots/webapps#validating-data-received-via-the-mini-app
- *
- * Algorithm:
- *   1. secret_key = HMAC_SHA256(bot_token, key="WebAppData")
- *   2. data_check_string = all fields except `hash`, sorted alphabetically,
- *      joined as "key=value" with "\n"
- *   3. computed_hash = HMAC_SHA256(data_check_string, key=secret_key), hex
- *   4. valid iff computed_hash === hash (timing-safe compare)
- *   5. reject if auth_date is older than the configured max age (replay protection)
- */
-
-const MAX_AUTH_AGE_SECONDS = 24 * 60 * 60; // 24h — tune to your session policy
+const MAX_AUTH_AGE_SECONDS = 24 * 60 * 60; 
 
 const telegramUserSchema = z.object({
   id: z.number(),

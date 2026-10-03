@@ -22,11 +22,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     async function initAuth() {
-      // Не начинаем авторизацию, пока Telegram WebApp SDK полностью не готов
       if (!isReady) return;
 
       try {
-        // 1. Проверяем существующую куку/сессию
         const meRes = await fetch('/api/auth/me');
         if (meRes.ok) {
           const userData = await meRes.json();
@@ -35,7 +33,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           return;
         }
 
-        // 2. Если сессии нет, отправляем валидировать initData
         if (initData) {
           const tgRes = await fetch('/api/auth/telegram', {
             method: 'POST',

@@ -17,7 +17,6 @@ export async function DELETE(
     throw err;
   }
 
-  // Помечаем счет как архивированный (мягкое удаление)
   await prisma.account.updateMany({
     where: { id, userId },
     data: { isArchived: true },

@@ -70,7 +70,6 @@ export async function POST(req: NextRequest) {
   return NextResponse.json({ account: serialize(account) }, { status: 201 });
 }
 
-// Decimal/BigInt fields serialize to strings so JSON transport never loses precision.
 function serialize<T>(value: T): T {
   return JSON.parse(
     JSON.stringify(value, (_key, v) =>

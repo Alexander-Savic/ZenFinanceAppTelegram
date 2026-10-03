@@ -4,11 +4,9 @@ import { prisma } from "@/lib/prisma";
 import { requireUserId, UnauthorizedError } from "@/lib/session";
 import { TransactionType, Currency } from "@prisma/client";
 
-// Безопасный парсинг различных форматов дат (Excel Serial Date, String, Date)
 function parseCustomDate(rawDate: any): Date {
   if (!rawDate) return new Date();
 
-  // Числовой формат Excel
   if (typeof rawDate === "number") {
     const parsed = XLSX.SSF.parse_date_code(rawDate);
     if (parsed) {
@@ -16,21 +14,18 @@ function parseCustomDate(rawDate: any): Date {
     }
   }
 
-  // Готовый объект Date
   if (rawDate instanceof Date && !isNaN(rawDate.getTime())) {
     return rawDate;
   }
 
   const strDate = String(rawDate).trim();
 
-  // Формат ДД.ММ.ГГГГ или ДД/ММ/ГГГГ
   const ddmmyyyyMatch = strDate.match(/^(\d{2})[\.\/](\d{2})[\.\/](\d{4})$/);
   if (ddmmyyyyMatch) {
     const [, day, month, year] = ddmmyyyyMatch;
     return new Date(Number(year), Number(month) - 1, Number(day));
   }
 
-  // ISO и другие стандартные форматы
   const parsedDate = new Date(strDate);
   return isNaN(parsedDate.getTime()) ? new Date() : parsedDate;
 }
@@ -64,7 +59,6 @@ export async function POST(req: NextRequest) {
       description?: string;
     }> = [];
 
-    // --- Обработка XLSX / XLS ---
     if (file.name.endsWith(".xlsx") || file.name.endsWith(".xls")) {
       const wb = XLSX.read(buffer, { type: "buffer", cellDates: true });
       const firstSheetName = wb.SheetNames[0];
@@ -108,9 +102,7 @@ export async function POST(req: NextRequest) {
         }
       }
     } 
-    // --- Обработка PDF (динамический импорт во время запроса) ---
     else if (file.name.endsWith(".pdf")) {
-      // Ленивый импорт защищает сборку Next.js от отсутствия глобальных браузерных объектов
       const pdfParse = require("pdf-parse");
       const pdfData = await pdfParse(buffer);
       const lines = pdfData.text.split("\n");
@@ -151,7 +143,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Сохранение массовым запросом в базу через Prisma
     await prisma.transaction.createMany({
       data: items.map((t) => ({
         userId,

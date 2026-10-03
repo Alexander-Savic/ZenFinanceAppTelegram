@@ -37,7 +37,6 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   return NextResponse.json({ ok: true });
 }
 
-// «Удаление» = отмена: исторические транзакции с subscriptionId остаются.
 export async function DELETE(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   const userId = await getUserId();
   if (userId instanceof NextResponse) return userId;

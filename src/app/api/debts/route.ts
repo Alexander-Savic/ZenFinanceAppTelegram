@@ -36,7 +36,6 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    // Ищем существующий контакт пользователя или создаем новый
     let contact = await prisma.contact.findFirst({
       where: { userId: user, name: contactName },
     });
@@ -56,7 +55,7 @@ export async function POST(request: Request) {
       data: {
         userId: user,
         contactId: contact.id,
-        direction, // 'I_OWE' | 'OWED_TO_ME'
+        direction,
         principal: amountDecimal,
         remaining: amountDecimal,
         currency: currency || 'USD',
